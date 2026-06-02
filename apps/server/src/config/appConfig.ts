@@ -1,0 +1,30 @@
+import type { ModelProviderName } from "../ai/providers/createModelProvider.js";
+export type AppConfig = {
+  app: { port: number; baseUrl: string };
+  web: { origin: string };
+  polling: {
+    enabled: boolean;
+    intervalMs: number;
+    initialLookbackHours: number;
+    maxMessagesPerPoll: number;
+    maxConversationsPerPoll: number;
+  };
+  ui: {
+    autoOpenOnImportantMessage: boolean;
+    autoOpenMinUrgency: "low" | "medium" | "high";
+  };
+  ai: {
+    provider: ModelProviderName;
+    model: string;
+    temperature: number;
+    maxTokens: number;
+  };
+  knowledge: { enabled: boolean; rootDir: string };
+  storage: { dataDir: string; sqlitePath: string };
+  mcp: {
+    mode: "disabled" | "stdio";
+    command: string;
+    args: string[];
+    env: Record<string, string>;
+  };
+};

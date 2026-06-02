@@ -1,0 +1,71 @@
+import type {
+  ChatMessage,
+  InquiryAnalysis,
+  KnowledgeItem,
+  NormalizedSlackMessage,
+} from "shared/types";
+import { inquiryAnalysisSchema } from "shared/schemas";
+import type { AppConfig } from "../config/appConfig.js";
+import type { ModelProvider } from "./providers/createModelProvider.js";
+import { inquiryAnalysisSystemPrompt } from "./prompts/inquiryAnalysisPrompt.js";
+import { chatSystemPrompt } from "./prompts/chatPrompt.js";
+import { newId } from "../utils/ids.js";
+import { nowIso } from "../utils/date.js";
+export type InquiryAnalysisInput = {
+  slackMessage: NormalizedSlackMessage;
+  threadMessages: NormalizedSlackMessage[];
+  relatedKnowledge: KnowledgeItem[];
+  pastSimilarInquiries: KnowledgeItem[];
+};
+export type InquiryChatInput = {
+  messageId: string;
+  userMessage: string;
+  context: {
+    slackMessage: NormalizedSlackMessage;
+    agentOutput?: InquiryAnalysis;
+    chatHistory: ChatMessage[];
+    relatedKnowledge: KnowledgeItem[];
+  };
+};
+export class DefaultLlmClient {
+  constructor(
+    private provider: ModelProvider,
+    private config: AppConfig,
+  ) {}
+  async analyzeInquiry(input: InquiryAnalysisInput): Promise<InquiryAnalysis> {
+    const userPrompt = JSON.stringify(input, null, 2);
+    if (this.provider.generateObject)
+      return this.provider.generateObject<InquiryAnalysis>({
+        schema: inquiryAnalysisSchema,
+        systemPrompt: inquiryAnalysisSystemPrompt,
+        userPrompt,
+        temperature: this.config.ai.temperature,
+        maxTokens: this.config.ai.maxTokens,
+        responseFormat: "json",
+      });
+    const out = await this.provider.generate({
+      systemPrompt: inquiryAnalysisSystemPrompt,
+      userPrompt,
+      temperature: this.config.ai.temperature,
+      maxTokens: this.config.ai.maxTokens,
+      responseFormat: "json",
+    });
+    return inquiryAnalysisSchema.parse(JSON.parse(out.content));
+  }
+  async chat(input: InquiryChatInput): Promise<ChatMessage> {
+    const out = await this.provider.generate({
+      systemPrompt: chatSystemPrompt,
+      userPrompt: JSON.stringify(input, null, 2),
+      temperature: this.config.ai.temperature,
+      maxTokens: this.config.ai.maxTokens,
+    });
+    return {
+      id: newId("chat"),
+      slackMessageId: input.messageId,
+      role: "assistant",
+      content: out.content,
+      createdAt: nowIso(),
+    };
+  }
+}
+export type LlmClient = DefaultLlmClient;

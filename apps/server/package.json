@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "latest",
+    "@ai-sdk/openai": "latest",
+    "@hono/node-server": "latest",
+    "@modelcontextprotocol/sdk": "latest",
+    "@openrouter/ai-sdk-provider": "latest",
+    "ai": "latest",
+    "better-sqlite3": "latest",
+    "hono": "latest",
+    "shared": "workspace:*",
+    "zod": "latest",
+    "@hono/zod-validator": "latest"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}

@@ -1,0 +1,44 @@
+import type { MessageListItem } from "shared/types";
+export function MessageList({
+  title,
+  messages,
+  navigate,
+}: {
+  title: string;
+  messages: MessageListItem[];
+  navigate: (p: string) => void;
+}) {
+  return (
+    <section className="card wide">
+      <h2>{title}</h2>
+      {messages.length === 0 ? (
+        <p>該当する問い合わせはありません。</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>受信</th>
+              <th>送信者</th>
+              <th>会話</th>
+              <th>概要</th>
+              <th>状態</th>
+              <th>緊急度</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.map((m) => (
+              <tr key={m.id} onClick={() => navigate(`/messages/${m.id}`)}>
+                <td>{new Date(m.createdAt).toLocaleString()}</td>
+                <td>{m.userName ?? m.userId}</td>
+                <td>{m.conversationName ?? m.conversationId}</td>
+                <td>{m.agentRun?.summary ?? m.textPreview}</td>
+                <td>{m.status}</td>
+                <td>{m.agentRun?.urgency ?? m.relevanceCategory}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
