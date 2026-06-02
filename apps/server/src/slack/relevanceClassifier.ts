@@ -1,4 +1,94 @@
 import type { NormalizedSlackMessage, RelevanceResult, SlackMcpUser } from "shared/types";
-const REQUEST_KEYWORDS=["確認お願いします","確認して","見てもらえますか","見てください","対応お願いします","対応できますか","教えてください","教えて","どうすれば","わかりますか","お願いできますか","依頼","至急","急ぎ","本日中","今日中","明日まで","?","？"];
-const INFO_ONLY=["共有です","FYI","ご参考","対応不要","返信不要"];
-export function classifyRelevance(msg:NormalizedSlackMessage, currentUser:SlackMcpUser): RelevanceResult { const text=msg.text || ""; if(msg.userId && msg.userId===currentUser.id) return {shouldAnalyze:false,shouldShowInUi:false,category:"noise",reason:"自分が送信したメッセージのため除外",urgency:"low"}; if(INFO_ONLY.some(k=>text.includes(k))) return {shouldAnalyze:false,shouldShowInUi:false,category:"information_only",reason:"情報共有または対応不要の可能性が高いため除外",urgency:"low"}; const names=[currentUser.id,currentUser.name,currentUser.realName,currentUser.displayName].filter(Boolean) as string[]; const mentioned=names.some(n=>text.includes(`<@${n}>`)||text.includes(n)); const isDm=msg.conversationType==="im"||msg.conversationType==="mpim"; const keyword=REQUEST_KEYWORDS.find(k=>text.includes(k)); const urgent=["至急","急ぎ","本日中","今日中"].some(k=>text.includes(k)); if(isDm) return {shouldAnalyze:true,shouldShowInUi:true,category:"direct_message",reason:"DMまたはグループDMのため対応候補",urgency:urgent?"high":"medium"}; if(mentioned) return {shouldAnalyze:true,shouldShowInUi:true,category:"mention_to_me",reason:"自分へのメンションまたは名前が含まれるため対応候補",urgency:urgent?"high":"medium"}; if(keyword) return {shouldAnalyze:true,shouldShowInUi:true,category:keyword.includes("?")||keyword.includes("？")?"question":"request",reason:`対応依頼/質問キーワード「${keyword}」を検出`,urgency:urgent?"high":"medium"}; if(msg.threadTs && msg.threadTs!==msg.ts) return {shouldAnalyze:true,shouldShowInUi:true,category:"reply_to_my_thread",reason:"スレッド返信のため確認候補",urgency:"low"}; return {shouldAnalyze:false,shouldShowInUi:false,category:"noise",reason:"自分宛て・質問・依頼の条件に合致しないため除外",urgency:"low"}; }
+const REQUEST_KEYWORDS = [
+  "確認お願いします",
+  "確認して",
+  "見てもらえますか",
+  "見てください",
+  "対応お願いします",
+  "対応できますか",
+  "教えてください",
+  "教えて",
+  "どうすれば",
+  "わかりますか",
+  "お願いできますか",
+  "依頼",
+  "至急",
+  "急ぎ",
+  "本日中",
+  "今日中",
+  "明日まで",
+  "?",
+  "？",
+];
+const INFO_ONLY = ["共有です", "FYI", "ご参考", "対応不要", "返信不要"];
+export function classifyRelevance(
+  msg: NormalizedSlackMessage,
+  currentUser: SlackMcpUser,
+): RelevanceResult {
+  const text = msg.text || "";
+  if (msg.userId && msg.userId === currentUser.id)
+    return {
+      shouldAnalyze: false,
+      shouldShowInUi: false,
+      category: "noise",
+      reason: "自分が送信したメッセージのため除外",
+      urgency: "low",
+    };
+  if (INFO_ONLY.some((k) => text.includes(k)))
+    return {
+      shouldAnalyze: false,
+      shouldShowInUi: false,
+      category: "information_only",
+      reason: "情報共有または対応不要の可能性が高いため除外",
+      urgency: "low",
+    };
+  const names = [
+    currentUser.id,
+    currentUser.name,
+    currentUser.realName,
+    currentUser.displayName,
+  ].filter(Boolean) as string[];
+  const mentioned = names.some((n) => text.includes(`<@${n}>`) || text.includes(n));
+  const isDm = msg.conversationType === "im" || msg.conversationType === "mpim";
+  const keyword = REQUEST_KEYWORDS.find((k) => text.includes(k));
+  const urgent = ["至急", "急ぎ", "本日中", "今日中"].some((k) => text.includes(k));
+  if (isDm)
+    return {
+      shouldAnalyze: true,
+      shouldShowInUi: true,
+      category: "direct_message",
+      reason: "DMまたはグループDMのため対応候補",
+      urgency: urgent ? "high" : "medium",
+    };
+  if (mentioned)
+    return {
+      shouldAnalyze: true,
+      shouldShowInUi: true,
+      category: "mention_to_me",
+      reason: "自分へのメンションまたは名前が含まれるため対応候補",
+      urgency: urgent ? "high" : "medium",
+    };
+  if (keyword)
+    return {
+      shouldAnalyze: true,
+      shouldShowInUi: true,
+      category: keyword.includes("?") || keyword.includes("？") ? "question" : "request",
+      reason: `対応依頼/質問キーワード「${keyword}」を検出`,
+      urgency: urgent ? "high" : "medium",
+    };
+  if (msg.threadTs && msg.threadTs !== msg.ts)
+    return {
+      shouldAnalyze: true,
+      shouldShowInUi: true,
+      category: "reply_to_my_thread",
+      reason: "スレッド返信のため確認候補",
+      urgency: "low",
+    };
+  return {
+    shouldAnalyze: false,
+    shouldShowInUi: false,
+    category: "noise",
+    reason: "自分宛て・質問・依頼の条件に合致しないため除外",
+    urgency: "low",
+  };
+}

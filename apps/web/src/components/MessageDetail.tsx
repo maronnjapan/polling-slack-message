@@ -1,2 +1,42 @@
-import type { MessageDetail as Detail } from "shared/types"; import { api } from "../api/client"; import { AgentOutputPanel } from "./AgentOutputPanel"; import { ChatPanel } from "./ChatPanel";
-export function MessageDetail({detail,reload}:{detail:Detail;reload:()=>void}){ const m=detail.message; return <div className="grid"><section className="card"><h2>元Slackメッセージ</h2><p><b>{m.userName ?? m.userId}</b> in {m.conversationName ?? m.conversationId}</p><p>{new Date(m.createdAt).toLocaleString()}</p>{m.permalink&&<a href={m.permalink} target="_blank">Slack permalink</a>}<pre>{m.textPreview}</pre><p>一次判定: {m.relevanceCategory} / {detail.relevanceReason}</p><label>ステータス <select value={m.status} onChange={e=>api.updateStatus(m.id,e.target.value).then(reload)}><option value="open">未対応</option><option value="in_progress">対応中</option><option value="pending">保留</option><option value="done">対応済み</option><option value="not_needed">対応不要</option></select></label></section><AgentOutputPanel run={detail.agentRun}/><ChatPanel messageId={m.id} initial={detail.chatMessages} onNew={reload}/></div>; }
+import type { MessageDetail as Detail } from "shared/types";
+import { api } from "../api/client";
+import { AgentOutputPanel } from "./AgentOutputPanel";
+import { ChatPanel } from "./ChatPanel";
+export function MessageDetail({ detail, reload }: { detail: Detail; reload: () => void }) {
+  const m = detail.message;
+  return (
+    <div className="grid">
+      <section className="card">
+        <h2>元Slackメッセージ</h2>
+        <p>
+          <b>{m.userName ?? m.userId}</b> in {m.conversationName ?? m.conversationId}
+        </p>
+        <p>{new Date(m.createdAt).toLocaleString()}</p>
+        {m.permalink && (
+          <a href={m.permalink} target="_blank">
+            Slack permalink
+          </a>
+        )}
+        <pre>{m.textPreview}</pre>
+        <p>
+          一次判定: {m.relevanceCategory} / {detail.relevanceReason}
+        </p>
+        <label>
+          ステータス{" "}
+          <select
+            value={m.status}
+            onChange={(e) => api.updateStatus(m.id, e.target.value).then(reload)}
+          >
+            <option value="open">未対応</option>
+            <option value="in_progress">対応中</option>
+            <option value="pending">保留</option>
+            <option value="done">対応済み</option>
+            <option value="not_needed">対応不要</option>
+          </select>
+        </label>
+      </section>
+      <AgentOutputPanel run={detail.agentRun} />
+      <ChatPanel messageId={m.id} initial={detail.chatMessages} onNew={reload} />
+    </div>
+  );
+}

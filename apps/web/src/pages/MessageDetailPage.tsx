@@ -1,2 +1,33 @@
-import { useCallback, useEffect, useState } from "react"; import type { MessageDetail as Detail } from "shared/types"; import { api } from "../api/client"; import { MessageDetail } from "../components/MessageDetail";
-export function MessageDetailPage({id,navigate}:{id:string;navigate:(p:string)=>void}){ const [detail,setDetail]=useState<Detail>(); const [error,setError]=useState(""); const load=useCallback(()=>api.message(id).then(setDetail).catch(e=>setError(e.message)),[id]); useEffect(()=>{load();},[load]); if(error) return <section className="card"><p className="bad">{error}</p><button onClick={()=>navigate("/")}>戻る</button></section>; if(!detail) return <p>Loading...</p>; return <><button onClick={()=>navigate("/")}>← 一覧へ</button><MessageDetail detail={detail} reload={load}/></>; }
+import { useCallback, useEffect, useState } from "react";
+import type { MessageDetail as Detail } from "shared/types";
+import { api } from "../api/client";
+import { MessageDetail } from "../components/MessageDetail";
+export function MessageDetailPage({ id, navigate }: { id: string; navigate: (p: string) => void }) {
+  const [detail, setDetail] = useState<Detail>();
+  const [error, setError] = useState("");
+  const load = useCallback(
+    () =>
+      api
+        .message(id)
+        .then(setDetail)
+        .catch((e) => setError(e.message)),
+    [id],
+  );
+  useEffect(() => {
+    load();
+  }, [load]);
+  if (error)
+    return (
+      <section className="card">
+        <p className="bad">{error}</p>
+        <button onClick={() => navigate("/")}>戻る</button>
+      </section>
+    );
+  if (!detail) return <p>Loading...</p>;
+  return (
+    <>
+      <button onClick={() => navigate("/")}>← 一覧へ</button>
+      <MessageDetail detail={detail} reload={load} />
+    </>
+  );
+}

@@ -1,2 +1,83 @@
-import type { McpToolInfo, SlackMcpConversation, SlackMcpMessage, SlackMcpUser } from "shared/types"; import type { FetchRecentMessagesInput, FetchThreadInput, GetConversationInfoInput, GetUserInfoInput, SearchMessagesInput } from "./types.js"; import { SlackMcpClient } from "./mcpClient.js"; import { isReadOnlyTool, loadToolMap, type ToolMap } from "./toolMapper.js";
-export class SlackMcpProvider { private map:ToolMap; constructor(private client:SlackMcpClient){ this.map=loadToolMap(); } async listAvailableTools():Promise<McpToolInfo[]>{ return (await this.client.listTools()).map((t:any)=>({name:t.name,description:t.description,inputSchema:t.inputSchema})); } async status(){ try{ const tools=await this.listAvailableTools(); const required=["getCurrentUser","searchMessages","fetchThread"]; return {connected:tools.length>0,serverName:this.map.serverName,availableTools:tools.length,hasRequiredTools:required.every(k=>tools.some(t=>t.name===this.map.tools[k])),tools}; }catch(e){ return {connected:false,serverName:this.map.serverName,availableTools:0,hasRequiredTools:false,error:e instanceof Error?e.message:String(e),tools:[]}; } } private async call<T>(key:string,args:Record<string,unknown>={}):Promise<T>{ const tool=this.map.tools[key]; if(!tool) throw new Error(`Missing MCP tool mapping: ${key}`); if(!isReadOnlyTool(tool)) throw new Error(`Blocked non-read-only Slack MCP tool: ${tool}`); const res=await this.client.callTool(tool,args); const content=(res as any).content; const text=Array.isArray(content)?content.map((c:any)=>c.text ?? JSON.stringify(c)).join("\n") : JSON.stringify(res); try{return JSON.parse(text) as T;}catch{return res as T;} } getCurrentUser(){return this.call<SlackMcpUser>("getCurrentUser");} searchMessages(input:SearchMessagesInput){return this.call<SlackMcpMessage[]>("searchMessages",input);} fetchRecentMessages(input:FetchRecentMessagesInput){return this.call<SlackMcpMessage[]>("fetchRecentMessages",input);} fetchThread(input:FetchThreadInput){return this.call<SlackMcpMessage[]>("fetchThread",input);} getUserInfo(input:GetUserInfoInput){return this.call<SlackMcpUser>("getUserInfo",input);} getConversationInfo(input:GetConversationInfoInput){return this.call<SlackMcpConversation>("getConversationInfo",input);} }
+import type {
+  McpToolInfo,
+  SlackMcpConversation,
+  SlackMcpMessage,
+  SlackMcpUser,
+} from "shared/types";
+import type {
+  FetchRecentMessagesInput,
+  FetchThreadInput,
+  GetConversationInfoInput,
+  GetUserInfoInput,
+  SearchMessagesInput,
+} from "./types.js";
+import { SlackMcpClient } from "./mcpClient.js";
+import { isReadOnlyTool, loadToolMap, type ToolMap } from "./toolMapper.js";
+export class SlackMcpProvider {
+  private map: ToolMap;
+  constructor(private client: SlackMcpClient) {
+    this.map = loadToolMap();
+  }
+  async listAvailableTools(): Promise<McpToolInfo[]> {
+    return (await this.client.listTools()).map((t: any) => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.inputSchema,
+    }));
+  }
+  async status() {
+    try {
+      const tools = await this.listAvailableTools();
+      const required = ["getCurrentUser", "searchMessages", "fetchThread"];
+      return {
+        connected: tools.length > 0,
+        serverName: this.map.serverName,
+        availableTools: tools.length,
+        hasRequiredTools: required.every((k) => tools.some((t) => t.name === this.map.tools[k])),
+        tools,
+      };
+    } catch (e) {
+      return {
+        connected: false,
+        serverName: this.map.serverName,
+        availableTools: 0,
+        hasRequiredTools: false,
+        error: e instanceof Error ? e.message : String(e),
+        tools: [],
+      };
+    }
+  }
+  private async call<T>(key: string, args: Record<string, unknown> = {}): Promise<T> {
+    const tool = this.map.tools[key];
+    if (!tool) throw new Error(`Missing MCP tool mapping: ${key}`);
+    if (!isReadOnlyTool(tool)) throw new Error(`Blocked non-read-only Slack MCP tool: ${tool}`);
+    const res = await this.client.callTool(tool, args);
+    const content = (res as any).content;
+    const text = Array.isArray(content)
+      ? content.map((c: any) => c.text ?? JSON.stringify(c)).join("\n")
+      : JSON.stringify(res);
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return res as T;
+    }
+  }
+  getCurrentUser() {
+    return this.call<SlackMcpUser>("getCurrentUser");
+  }
+  searchMessages(input: SearchMessagesInput) {
+    return this.call<SlackMcpMessage[]>("searchMessages", input);
+  }
+  fetchRecentMessages(input: FetchRecentMessagesInput) {
+    return this.call<SlackMcpMessage[]>("fetchRecentMessages", input);
+  }
+  fetchThread(input: FetchThreadInput) {
+    return this.call<SlackMcpMessage[]>("fetchThread", input);
+  }
+  getUserInfo(input: GetUserInfoInput) {
+    return this.call<SlackMcpUser>("getUserInfo", input);
+  }
+  getConversationInfo(input: GetConversationInfoInput) {
+    return this.call<SlackMcpConversation>("getConversationInfo", input);
+  }
+}

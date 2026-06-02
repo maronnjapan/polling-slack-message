@@ -1,1 +1,19 @@
-{"name":"local-slack-mcp-agent","private":true,"type":"module","scripts":{"dev":"pnpm --filter shared build && concurrently \"pnpm --filter server dev\" \"pnpm --filter web dev\"","dev:with-secrets":"bash scripts/dev-with-1password.sh","start:with-secrets":"bash scripts/start-with-1password.sh","build":"pnpm --filter shared build && pnpm --filter server build && pnpm --filter web build","typecheck":"pnpm --filter shared typecheck && pnpm --filter server typecheck && pnpm --filter web typecheck"},"devDependencies":{"concurrently":"latest","typescript":"latest"}}
+{
+  "name": "local-slack-mcp-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter shared build && concurrently \"pnpm --filter server dev\" \"pnpm --filter web dev\"",
+    "dev:with-secrets": "bash scripts/dev-with-1password.sh",
+    "start:with-secrets": "bash scripts/start-with-1password.sh",
+    "build": "pnpm --filter shared build && pnpm --filter server build && pnpm --filter web build",
+    "typecheck": "pnpm --filter shared typecheck && pnpm --filter server typecheck && pnpm --filter web typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,css,md,yml,yaml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,css,md,yml,yaml}\" --ignore-path .gitignore"
+  },
+  "devDependencies": {
+    "concurrently": "latest",
+    "typescript": "latest",
+    "prettier": "latest"
+  }
+}

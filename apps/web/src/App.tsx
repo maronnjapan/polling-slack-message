@@ -1,2 +1,25 @@
-import { useEffect, useState } from "react"; import { HomePage } from "./pages/HomePage"; import { MessageDetailPage } from "./pages/MessageDetailPage"; import { SettingsPage } from "./pages/SettingsPage"; import { Layout } from "./components/Layout";
-export function App(){ const [path,setPath]=useState(location.pathname); useEffect(()=>{const on=()=>setPath(location.pathname); addEventListener("popstate",on); return()=>removeEventListener("popstate",on);},[]); const nav=(p:string)=>{history.pushState(null,"",p); setPath(p);}; let page=path.startsWith("/messages/")?<MessageDetailPage id={path.split("/")[2]} navigate={nav}/>:path==="/settings"?<SettingsPage/>:<HomePage navigate={nav}/>; return <Layout navigate={nav}>{page}</Layout>; }
+import { useEffect, useState } from "react";
+import { HomePage } from "./pages/HomePage";
+import { MessageDetailPage } from "./pages/MessageDetailPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { Layout } from "./components/Layout";
+export function App() {
+  const [path, setPath] = useState(location.pathname);
+  useEffect(() => {
+    const on = () => setPath(location.pathname);
+    addEventListener("popstate", on);
+    return () => removeEventListener("popstate", on);
+  }, []);
+  const nav = (p: string) => {
+    history.pushState(null, "", p);
+    setPath(p);
+  };
+  let page = path.startsWith("/messages/") ? (
+    <MessageDetailPage id={path.split("/")[2]} navigate={nav} />
+  ) : path === "/settings" ? (
+    <SettingsPage />
+  ) : (
+    <HomePage navigate={nav} />
+  );
+  return <Layout navigate={nav}>{page}</Layout>;
+}

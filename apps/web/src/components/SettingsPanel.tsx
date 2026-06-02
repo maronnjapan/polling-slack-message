@@ -1,2 +1,64 @@
-import { useEffect, useState } from "react"; import { api } from "../api/client";
-export function SettingsPanel(){ const [settings,setSettings]=useState<any>(); const [knowledge,setKnowledge]=useState<any[]>([]); const [form,setForm]=useState({title:"",content:"",tags:""}); useEffect(()=>{fetch("http://localhost:5174/api/settings").then(r=>r.json()).then(setSettings); api.knowledge().then(r=>setKnowledge(r.knowledge));},[]); const save=async()=>{ await api.createKnowledge({title:form.title,content:form.content,tags:form.tags.split(",").map(s=>s.trim()).filter(Boolean)}); setForm({title:"",content:"",tags:""}); setKnowledge((await api.knowledge()).knowledge); }; return <div className="grid"><section className="card"><h2>設定</h2><pre>{JSON.stringify(settings,null,2)}</pre><p className="warn">APIキーは.envや設定ファイルに保存せず、1Password CLI起動スクリプトから環境変数注入してください。</p></section><section className="card"><h2>ナレッジ追加</h2><input placeholder="タイトル" value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/><input placeholder="tags comma separated" value={form.tags} onChange={e=>setForm({...form,tags:e.target.value})}/><textarea placeholder="本文" value={form.content} onChange={e=>setForm({...form,content:e.target.value})}/><button onClick={save}>学びとして保存</button><h3>保存済み</h3>{knowledge.map(k=><p key={k.path}><b>{k.title}</b><br/><code>{k.path}</code></p>)}</section></div>; }
+import { useEffect, useState } from "react";
+import { api } from "../api/client";
+export function SettingsPanel() {
+  const [settings, setSettings] = useState<any>();
+  const [knowledge, setKnowledge] = useState<any[]>([]);
+  const [form, setForm] = useState({ title: "", content: "", tags: "" });
+  useEffect(() => {
+    fetch("http://localhost:5174/api/settings")
+      .then((r) => r.json())
+      .then(setSettings);
+    api.knowledge().then((r) => setKnowledge(r.knowledge));
+  }, []);
+  const save = async () => {
+    await api.createKnowledge({
+      title: form.title,
+      content: form.content,
+      tags: form.tags
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    });
+    setForm({ title: "", content: "", tags: "" });
+    setKnowledge((await api.knowledge()).knowledge);
+  };
+  return (
+    <div className="grid">
+      <section className="card">
+        <h2>設定</h2>
+        <pre>{JSON.stringify(settings, null, 2)}</pre>
+        <p className="warn">
+          APIキーは.envや設定ファイルに保存せず、1Password
+          CLI起動スクリプトから環境変数注入してください。
+        </p>
+      </section>
+      <section className="card">
+        <h2>ナレッジ追加</h2>
+        <input
+          placeholder="タイトル"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+        />
+        <input
+          placeholder="tags comma separated"
+          value={form.tags}
+          onChange={(e) => setForm({ ...form, tags: e.target.value })}
+        />
+        <textarea
+          placeholder="本文"
+          value={form.content}
+          onChange={(e) => setForm({ ...form, content: e.target.value })}
+        />
+        <button onClick={save}>学びとして保存</button>
+        <h3>保存済み</h3>
+        {knowledge.map((k) => (
+          <p key={k.path}>
+            <b>{k.title}</b>
+            <br />
+            <code>{k.path}</code>
+          </p>
+        ))}
+      </section>
+    </div>
+  );
+}

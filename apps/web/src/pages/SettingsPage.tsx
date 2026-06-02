@@ -1,2 +1,4 @@
 import { SettingsPanel } from "../components/SettingsPanel";
-export function SettingsPage(){ return <SettingsPanel/>; }
+export function SettingsPage() {
+  return <SettingsPanel />;
+}

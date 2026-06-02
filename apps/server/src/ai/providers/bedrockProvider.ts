@@ -1,2 +1,18 @@
-import type { GenerateInput, ModelProvider } from "./createModelProvider.js"; import type { AppConfig } from "../../config/appConfig.js"; import type { SecretProvider } from "../../secrets/secretProvider.js";
-export class BedrockProvider implements ModelProvider { name="bedrock" as const; constructor(private _config:AppConfig, private _secrets:SecretProvider){} async configured(){return !!process.env.AWS_REGION;} async generate(_i:GenerateInput){throw new Error("BedrockProvider is declared for future extension; install/configure @ai-sdk/amazon-bedrock to enable generation.");} }
+import type { GenerateInput, ModelProvider } from "./createModelProvider.js";
+import type { AppConfig } from "../../config/appConfig.js";
+import type { SecretProvider } from "../../secrets/secretProvider.js";
+export class BedrockProvider implements ModelProvider {
+  name = "bedrock" as const;
+  constructor(
+    private _config: AppConfig,
+    private _secrets: SecretProvider,
+  ) {}
+  async configured() {
+    return !!process.env.AWS_REGION;
+  }
+  async generate(_i: GenerateInput) {
+    throw new Error(
+      "BedrockProvider is declared for future extension; install/configure @ai-sdk/amazon-bedrock to enable generation.",
+    );
+  }
+}
