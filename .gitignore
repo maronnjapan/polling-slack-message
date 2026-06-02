@@ -1,0 +1,9 @@
+.env
+data/
+*.sqlite
+*.db
+node_modules/
+dist/
+apps/web/dist/
+apps/server/dist/
+.DS_Store

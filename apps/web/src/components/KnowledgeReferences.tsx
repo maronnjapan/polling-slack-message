@@ -1,0 +1,1 @@
+export function KnowledgeReferences({items}:{items:any[]}){ return <div>{items?.length?items.map((k,i)=><div className="ref" key={i}><strong>{k.title}</strong><p>{k.summary ?? k.reason}</p><code>{k.path}</code></div>):<p>関連ナレッジはありません。</p>}</div>; }
