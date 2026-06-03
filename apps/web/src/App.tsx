@@ -1,25 +1,32 @@
 import { useEffect, useState } from "react";
-import { HomePage } from "./pages/HomePage";
-import { MessageDetailPage } from "./pages/MessageDetailPage";
-import { SettingsPage } from "./pages/SettingsPage";
 import { Layout } from "./components/Layout";
-export function App() {
-  const [path, setPath] = useState(location.pathname);
-  useEffect(() => {
-    const on = () => setPath(location.pathname);
-    addEventListener("popstate", on);
-    return () => removeEventListener("popstate", on);
-  }, []);
-  const nav = (p: string) => {
-    history.pushState(null, "", p);
-    setPath(p);
-  };
-  let page = path.startsWith("/messages/") ? (
-    <MessageDetailPage id={path.split("/")[2]} navigate={nav} />
-  ) : path === "/settings" ? (
-    <SettingsPage />
-  ) : (
-    <HomePage navigate={nav} />
-  );
-  return <Layout navigate={nav}>{page}</Layout>;
+import { currentRoute } from "./lib/route";
+import { DashboardPage } from "./pages/DashboardPage";
+import { KnowledgePage } from "./pages/KnowledgePage";
+import { MessageDetailPage } from "./pages/MessageDetailPage";
+import { MessagesPage } from "./pages/MessagesPage";
+import { RepliesPage } from "./pages/RepliesPage";
+import { ReplyDetailPage } from "./pages/ReplyDetailPage";
+import { RunsPage } from "./pages/RunsPage";
+import { TodoDetailPage } from "./pages/TodoDetailPage";
+import { TodosPage } from "./pages/TodosPage";
+
+function render(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  if (path === "/") return <DashboardPage />;
+  if (parts[0] === "messages" && parts[1]) return <MessageDetailPage id={parts[1]} />;
+  if (parts[0] === "messages") return <MessagesPage />;
+  if (parts[0] === "todos" && parts[1]) return <TodoDetailPage id={parts[1]} />;
+  if (parts[0] === "todos") return <TodosPage />;
+  if (parts[0] === "replies" && parts[1]) return <ReplyDetailPage id={parts[1]} />;
+  if (parts[0] === "replies") return <RepliesPage />;
+  if (parts[0] === "runs") return <RunsPage />;
+  if (parts[0] === "knowledge") return <KnowledgePage />;
+  return <DashboardPage />;
+}
+
+export default function App() {
+  const [route, setRoute] = useState(currentRoute());
+  useEffect(() => { const onHash = () => setRoute(currentRoute()); window.addEventListener("hashchange", onHash); return () => window.removeEventListener("hashchange", onHash); }, []);
+  return <Layout>{render(route)}</Layout>;
 }

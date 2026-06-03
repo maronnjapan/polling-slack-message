@@ -1,0 +1,25 @@
+{
+  "name": "hono",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cors": {
+      "types": "./dist/cors.d.ts",
+      "import": "./dist/cors.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "workspace:*"
+  },
+  "version": "0.0.0"
+}

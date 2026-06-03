@@ -1,0 +1,13 @@
+{
+  "name": "tsx",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "tsx": "bin/tsx.js"
+  },
+  "scripts": {
+    "build": "mkdir -p dist && cp bin/tsx.js dist/tsx.js",
+    "typecheck": "node -e \"process.exit(0)\""
+  },
+  "version": "0.0.0"
+}

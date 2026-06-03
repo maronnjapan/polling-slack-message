@@ -1,0 +1,15 @@
+{
+  "name": "@vitejs/plugin-react",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "workspace:*"
+  },
+  "version": "0.0.0"
+}
