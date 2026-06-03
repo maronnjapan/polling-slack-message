@@ -1,1 +1,0 @@
-{"name":"typescript","version":"0.0.0","private":true,"type":"module","bin":{"tsc":"bin/tsc.js"},"scripts":{"build":"node -e \"process.exit(0)\"","typecheck":"node -e \"process.exit(0)\""}}

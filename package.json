@@ -3,21 +3,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && (pnpm dev:api & pnpm dev:web & pnpm agent:watch)",
-    "dev:api": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter api dev",
-    "dev:web": "pnpm --filter react build && pnpm --filter react-dom-client-stub build && pnpm --filter react-dom build && pnpm --filter vite build && pnpm --filter shared build && pnpm --filter web dev",
-    "agent:setup": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner setup",
-    "agent:run": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner run",
-    "agent:watch": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner watch",
-    "agent:once": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner once",
-    "agent:chat": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner chat",
-    "data:validate": "pnpm --filter zod build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner validate",
-    "lint": "pnpm --filter zod build && pnpm --filter hono build && pnpm --filter @hono/node-server build && pnpm --filter react build && pnpm --filter react-dom-client-stub build && pnpm --filter react-dom build && pnpm --filter vite build && pnpm --filter @vitejs/plugin-react build && pnpm --filter tsx build && pnpm --filter shared typecheck && pnpm --filter agent-runner typecheck && pnpm --filter api typecheck && pnpm --filter web typecheck",
+    "dev": "pnpm --filter shared build && pnpm --filter agent-runner build && (pnpm dev:api & pnpm dev:web & pnpm agent:watch)",
+    "dev:api": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter api dev",
+    "dev:web": "pnpm --filter shared build && pnpm --filter web dev",
+    "agent:setup": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner setup",
+    "agent:run": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner run",
+    "agent:watch": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner watch",
+    "agent:once": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner once",
+    "agent:chat": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner chat",
+    "data:validate": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter agent-runner validate",
+    "lint": "pnpm --filter shared typecheck && pnpm --filter agent-runner typecheck && pnpm --filter api typecheck && pnpm --filter web typecheck",
     "test": "pnpm data:validate && pnpm lint",
-    "build": "pnpm --filter zod build && pnpm --filter hono build && pnpm --filter @hono/node-server build && pnpm --filter react build && pnpm --filter react-dom-client-stub build && pnpm --filter react-dom build && pnpm --filter vite build && pnpm --filter @vitejs/plugin-react build && pnpm --filter tsx build && pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter api build && pnpm --filter web build"
+    "build": "pnpm --filter shared build && pnpm --filter agent-runner build && pnpm --filter api build && pnpm --filter web build"
   },
   "devDependencies": {
-    "typescript": "workspace:*",
-    "prettier": "workspace:*"
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3"
   }
 }
