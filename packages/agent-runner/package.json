@@ -1,0 +1,36 @@
+{
+  "name": "agent-runner",
+  "private": true,
+  "type": "module",
+  "main": "dist/commands/cli.js",
+  "types": "dist/commands/cli.d.ts",
+  "bin": {
+    "agent-runner": "dist/commands/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/commands/cli.ts",
+    "setup": "node dist/commands/cli.js setup",
+    "run": "node dist/commands/cli.js run",
+    "watch": "node dist/commands/cli.js watch",
+    "once": "node dist/commands/cli.js once",
+    "chat": "node dist/commands/cli.js chat",
+    "validate": "node dist/commands/cli.js validate",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "shared": "workspace:*",
+    "zod": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "workspace:*",
+    "typescript": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "version": "0.0.0"
+}

@@ -8,15 +8,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
+    "@vitejs/plugin-react": "workspace:*",
+    "react": "workspace:*",
+    "react-dom": "workspace:*",
     "shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "typescript": "latest",
-    "vite": "latest"
+    "typescript": "workspace:*",
+    "vite": "workspace:*"
   }
 }

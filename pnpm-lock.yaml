@@ -1,0 +1,143 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      prettier:
+        specifier: workspace:*
+        version: link:packages/prettier
+      typescript:
+        specifier: workspace:*
+        version: link:packages/typescript
+
+  apps/api:
+    dependencies:
+      '@hono/node-server':
+        specifier: workspace:*
+        version: link:../../packages/hono-node-server
+      agent-runner:
+        specifier: workspace:*
+        version: link:../../packages/agent-runner
+      hono:
+        specifier: workspace:*
+        version: link:../../packages/hono
+      shared:
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: workspace:*
+        version: link:../../packages/zod
+    devDependencies:
+      tsx:
+        specifier: workspace:*
+        version: link:../../packages/tsx
+      typescript:
+        specifier: workspace:*
+        version: link:../../packages/typescript
+
+  apps/web:
+    dependencies:
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+      react:
+        specifier: workspace:*
+        version: link:../../packages/react
+      react-dom:
+        specifier: workspace:*
+        version: link:../../packages/react-dom
+      shared:
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../../packages/typescript
+      vite:
+        specifier: workspace:*
+        version: link:../../packages/vite
+
+  packages/agent-runner:
+    dependencies:
+      shared:
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: workspace:*
+        version: link:../zod
+    devDependencies:
+      tsx:
+        specifier: workspace:*
+        version: link:../tsx
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/hono:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/hono-node-server:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/plugin-react:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/prettier: {}
+
+  packages/react:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/react-dom:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/react-dom-client:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: workspace:*
+        version: link:../zod
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/tsx: {}
+
+  packages/typescript: {}
+
+  packages/vite:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript
+
+  packages/zod:
+    devDependencies:
+      typescript:
+        specifier: workspace:*
+        version: link:../typescript

@@ -1,20 +1,6 @@
 import type { ReactNode } from "react";
-export function Layout({
-  children,
-  navigate,
-}: {
-  children: ReactNode;
-  navigate: (p: string) => void;
-}) {
-  return (
-    <>
-      <header className="top">
-        <button onClick={() => navigate("/")}>Inbox</button>
-        <button onClick={() => navigate("/settings")}>Settings</button>
-        <strong>Slack MCP 問い合わせ支援</strong>
-        <span>Slackへ自動返信しません</span>
-      </header>
-      <main>{children}</main>
-    </>
-  );
+
+export function Layout({ children }: { children: ReactNode }) {
+  const links = [["/", "Dashboard"], ["/messages", "Messages"], ["/todos", "ToDos"], ["/replies", "Replies"], ["/runs", "Runs"], ["/knowledge", "Knowledge"]];
+  return <div className="app-shell"><aside><h1>Slack Assistant</h1><p>Codex CLI + MCP の結果を確認するローカルUI</p><nav>{links.map(([href, label]) => <a key={href} href={`#${href}`}>{label}</a>)}</nav></aside><main>{children}</main></div>;
 }
