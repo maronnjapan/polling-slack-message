@@ -1,11 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import type { AgentRun, ChatTargetType } from "shared/types";
 import { nowIso } from "shared/utils";
 import { needsSlackMcpApproval, runCodex, slackMcpApprovalTools } from "../codex/runCodex.js";
 import { ensureDataDirs, findChat, findTargetContext, readMessages, readReplies, readRuns, readSettings, readTodos } from "../readers/fileStore.js";
-import { dataDir } from "../readers/paths.js";
 import { writeChat, writeRun } from "../writers/writeData.js";
 import { buildChatPrompt } from "../prompts/chatPrompt.js";
 import { buildNormalRunPrompt, setupPrompt } from "../prompts/runPrompt.js";
@@ -64,23 +61,6 @@ function markFinished(run: AgentRun, result: Awaited<ReturnType<typeof runCodex>
   }
 }
 
-async function readCodexRequestFromLog(logPath: string) {
-  const log = await fs.readFile(logPath, "utf8");
-  const requestStart = log.lastIndexOf("[request]");
-  const promptStartMarker = "[request.prompt]";
-  const promptEndMarker = "[/request.prompt]";
-  const promptStart = log.indexOf(promptStartMarker, requestStart);
-  const promptEnd = log.indexOf(promptEndMarker, promptStart);
-  if (requestStart < 0 || promptStart < 0 || promptEnd < 0) {
-    throw new Error(`Codex request prompt not found in run log: ${path.basename(logPath)}`);
-  }
-
-  const requestHeader = log.slice(requestStart, promptStart);
-  const modeMatch = requestHeader.match(/^mode: (setup|normal)$/m);
-  const mode = (modeMatch?.[1] ?? "normal") as "setup" | "normal";
-  const prompt = log.slice(promptStart + promptStartMarker.length, promptEnd).replace(/^\r?\n/, "");
-  return { mode, prompt };
-}
 
 async function snapshotIds() {
   const [messages, todos, replies] = await Promise.all([readMessages(), readTodos(), readReplies()]);
@@ -104,12 +84,13 @@ export async function executeCodexRun(type: "setup" | "manual" | "scheduled") {
   await ensureDataDirs();
   const startedAt = nowIso();
   const run = createRun(type, startedAt);
+  const settings = type !== "setup" ? await readSettings() : null;
+  const prompt = type === "setup" ? setupPrompt : buildNormalRunPrompt(settings?.allowedChannels, settings?.channelConfigs);
+  const mode = type === "setup" ? "setup" : "normal";
+  run.codexRequest = { mode, prompt };
   await writeRun(run);
   const before = await snapshotIds();
-  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
-  const settings = type !== "setup" ? await readSettings() : null;
-  const prompt = type === "setup" ? setupPrompt : buildNormalRunPrompt(settings?.allowedChannels);
-  const result = await runCodex(prompt, type === "setup" ? "setup" : "normal", logPath);
+  const result = await runCodex(prompt, mode);
   const created = await diffCreated(before);
   run.createdMessages = created.messages;
   run.createdTodos = created.todos;
@@ -134,11 +115,12 @@ export async function executeChat(targetType: ChatTargetType, targetId: string, 
 
   const startedAt = nowIso();
   const run = createRun("chat", startedAt);
+  const context = await findTargetContext(targetType, targetId);
+  const chatPrompt = buildChatPrompt(targetType, targetId, message, context);
+  run.codexRequest = { mode: "normal", prompt: chatPrompt };
   await writeRun(run);
   const before = await snapshotIds();
-  const context = await findTargetContext(targetType, targetId);
-  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
-  const result = await runCodex(buildChatPrompt(targetType, targetId, message, context), "normal", logPath);
+  const result = await runCodex(chatPrompt, "normal");
   const created = await diffCreated(before);
   run.createdMessages = created.messages;
   run.createdTodos = created.todos;
@@ -168,15 +150,15 @@ export async function approveCodexRun(runId: string) {
   }
 
   const approvedAt = nowIso();
-  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
-  const request = await readCodexRequestFromLog(logPath);
+  const request = run.codexRequest;
+  if (!request) throw new Error(`Run has no stored codex request: ${runId}`);
   run.status = "running";
   run.finishedAt = null;
   run.approvalRequest = { ...run.approvalRequest, status: "approved", approvedAt };
   await writeRun(run);
 
   const before = await snapshotIds();
-  const result = await runCodex(request.prompt, request.mode, logPath, { approveSlackMcpTools: true });
+  const result = await runCodex(request.prompt, request.mode, { approveSlackMcpTools: true });
   const created = await diffCreated(before);
   run.createdMessages = [...new Set([...run.createdMessages, ...created.messages])];
   run.createdTodos = [...new Set([...run.createdTodos, ...created.todos])];

@@ -1,7 +1,21 @@
-export function buildNormalRunPrompt(allowedChannels: string[] = []): string {
+function buildChannelLine(channel: string, config?: { additionalMcps: string[]; additionalPrompt: string }) {
+  const lines = [`- ${channel}`];
+  if (config?.additionalMcps && config.additionalMcps.length > 0) {
+    lines.push(`  追加使用するMCPサーバー: ${config.additionalMcps.join(", ")}`);
+  }
+  if (config?.additionalPrompt) {
+    lines.push(`  このチャンネル専用の追加指示: ${config.additionalPrompt}`);
+  }
+  return lines.join("\n");
+}
+
+export function buildNormalRunPrompt(
+  allowedChannels: string[] = [],
+  channelConfigs: Record<string, { additionalMcps: string[]; additionalPrompt: string }> = {},
+): string {
   const channelRestriction =
     allowedChannels.length > 0
-      ? `\n読み取り対象チャンネルを以下に限定してください（チャンネルIDまたはチャンネル名）:\n${allowedChannels.map((c) => `- ${c}`).join("\n")}\nそれ以外のチャンネルのメッセージは絶対に読み取らないでください。\n`
+      ? `\n読み取り対象チャンネルを以下に限定してください（チャンネルIDまたはチャンネル名）:\n${allowedChannels.map((c) => buildChannelLine(c, channelConfigs[c])).join("\n")}\nそれ以外のチャンネルのメッセージは絶対に読み取らないでください。\n`
       : "";
 
   return `あなたはSlack問い合わせ整理アシスタントです。
@@ -20,11 +34,11 @@ Slack MCPを使用して、未処理または最近のメッセージを取得�
 
 Slackへの返信や投稿は絶対に行わないでください。MCP設定や認証情報は変更しないでください。認証情報をdataやknowledgeやログに保存しないでください。
 
-結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。各JSONに対応するMarkdown確認用ファイルも保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。`;
+結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。`;
 }
 
 export const setupPrompt = `Slack問い合わせ整理アプリの初回セットアップ確認です。
 
 Codex CLIの動作、profile slack-assistant、MCP設定、Slack MCP接続、Slackメッセージ取得、data配下への書き込み、knowledge配下の読み取りを確認してください。
 Slackへの返信や投稿は絶対に行わないでください。認証情報を保存しないでください。
-確認結果をdata/runs配下のrunログとしてJSONとMarkdownで保存してください。`;
+確認結果をdata/runs配下のrunログとしてJSONで保存してください。`;

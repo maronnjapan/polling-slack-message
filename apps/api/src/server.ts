@@ -9,4 +9,3 @@ app.route("/api", routes);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port });
-console.log(`local API listening on http://127.0.0.1:${port}`);

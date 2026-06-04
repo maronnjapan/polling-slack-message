@@ -11,7 +11,6 @@ if (command === "setup") {
 } else if (command === "run" || command === "once") {
   console.log(JSON.stringify(await executeCodexRun("manual"), null, 2));
 } else if (command === "watch") {
-  console.log("agent-runner watch started (interval: 600000ms)");
   watch();
 } else if (command === "chat") {
   const targetType = chatTargetTypeSchema.parse(

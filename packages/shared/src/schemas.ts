@@ -99,6 +99,7 @@ export const agentRunSchema = z.object({
   createdReplies: z.array(z.string()),
   errors: z.array(runErrorSchema),
   approvalRequest: runApprovalRequestSchema.nullable().optional(),
+  codexRequest: z.object({ mode: z.enum(["setup", "normal"]), prompt: z.string() }).optional(),
 });
 
 export const chatRequestSchema = z.object({ message: z.string().min(1) });
@@ -106,9 +107,16 @@ export const messagePatchSchema = z.object({ status: messageStatusSchema.optiona
 export const todoPatchSchema = z.object({ status: todoStatusSchema.optional(), priority: prioritySchema.optional(), due: z.string().nullable().optional() });
 export const replyPatchSchema = z.object({ status: replyStatusSchema.optional(), draftReply: z.string().optional(), tone: z.string().optional() });
 
+export const channelConfigSchema = z.object({
+  additionalMcps: z.array(z.string()).default([]),
+  additionalPrompt: z.string().default(""),
+});
+
 export const appSettingsSchema = z.object({
   allowedChannels: z.array(z.string()).default([]),
+  channelConfigs: z.record(z.string(), channelConfigSchema).default({}),
 });
 export const settingsPatchSchema = z.object({
   allowedChannels: z.array(z.string()).optional(),
+  channelConfigs: z.record(z.string(), channelConfigSchema).optional(),
 });

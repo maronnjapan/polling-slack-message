@@ -97,6 +97,7 @@ export interface AgentRun {
   createdReplies: string[];
   errors: RunError[];
   approvalRequest?: RunApprovalRequest | null;
+  codexRequest?: { mode: "setup" | "normal"; prompt: string };
 }
 
 export interface KnowledgeFile {
@@ -105,6 +106,12 @@ export interface KnowledgeFile {
   content?: string;
 }
 
+export interface ChannelConfig {
+  additionalMcps: string[];
+  additionalPrompt: string;
+}
+
 export interface AppSettings {
   allowedChannels: string[];
+  channelConfigs: Record<string, ChannelConfig>;
 }

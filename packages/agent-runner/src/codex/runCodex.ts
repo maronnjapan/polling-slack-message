@@ -1,5 +1,4 @@
 import { spawn } from "node:child_process";
-import { createWriteStream } from "node:fs";
 import { repoRoot } from "../readers/paths.js";
 
 export interface CodexResult {
@@ -50,23 +49,6 @@ function codexCommandWithoutPrompt(args: string[]) {
   return codexCommand([...args.slice(0, -1), "<prompt>"]);
 }
 
-function responseLog(exitCode: number | null, stdout: string, stderr: string) {
-  return [
-    "[response]",
-    `exitCode: ${exitCode}`,
-    "",
-    "[response.stdout]",
-    truncate(stdout.trim() || "(empty)", 8000),
-    "[/response.stdout]",
-    "",
-    "[response.stderrSummary]",
-    summarizeStderr(stderr),
-    "[/response.stderrSummary]",
-    "",
-    `[finished] ${new Date().toISOString()}`,
-    "",
-  ].join("\n");
-}
 
 function slackMcpApprovalConfigOverrides() {
   return slackMcpApprovalTools.flatMap((tool) => [
@@ -110,32 +92,15 @@ export function needsSlackMcpApproval(result: CodexResult) {
 export function runCodex(
   prompt: string,
   mode: "setup" | "normal" = "normal",
-  logPath?: string,
   options: CodexRunOptions = {},
 ): Promise<CodexResult> {
   const args = buildCodexArgs(prompt, mode, options);
   const command = codexCommandWithoutPrompt(args);
   return new Promise((resolve) => {
     const child = spawn("codex", args, { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
-    const logStream = logPath ? createWriteStream(logPath, { flags: "a" }) : null;
-    const writeLog = (text: string) => {
-      if (logStream) logStream.write(text);
-    };
     let resolved = false;
 
-    writeLog(
-      [
-        `[started] ${new Date().toISOString()}`,
-        "[request]",
-        `mode: ${mode}`,
-        `command: ${command}`,
-        "",
-        "[request.prompt]",
-        prompt,
-        "[/request.prompt]",
-        "",
-      ].join("\n"),
-    );
+    process.stdout.write(`[codex:start] ${new Date().toISOString()} mode=${mode} command=${command}\n`);
 
     let stdout = "";
     let stderr = "";
@@ -149,15 +114,13 @@ export function runCodex(
       if (resolved) return;
       resolved = true;
       const exitCode = error.code === "ENOENT" ? 127 : null;
-      writeLog(`\n${responseLog(exitCode, stdout, error.message)}`);
-      logStream?.end();
+      process.stdout.write(`[codex:error] exitCode=${exitCode} ${error.message}\n`);
       resolve({ command, exitCode, stdout, stderr: error.message });
     });
     child.on("close", (exitCode: number | null) => {
       if (resolved) return;
       resolved = true;
-      writeLog(`\n${responseLog(exitCode, stdout, stderr)}`);
-      logStream?.end();
+      process.stdout.write(`[codex:done] ${new Date().toISOString()} exitCode=${exitCode}\n${summarizeStderr(stderr) !== "(no stderr summary)" ? `[codex:stderr] ${summarizeStderr(stderr)}\n` : ""}`);
       resolve({ command, exitCode, stdout, stderr });
     });
   });
