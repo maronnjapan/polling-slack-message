@@ -33,8 +33,20 @@ export function MessageDetailPage({ id }: { id: string }) {
         </div>
         <p>{m.data.rawText}</p>
         <dl>
-          <dt>送信者</dt><dd>{m.data.source.sender}</dd>
-          <dt>チャンネル</dt><dd>{m.data.source.channel}</dd>
+          <dt>送信者</dt>
+          <dd>
+            {m.data.source.senderName ?? m.data.source.sender}
+          </dd>
+          <dt>チャンネル</dt>
+          <dd>
+            {m.data.source.channelName ?? m.data.source.channel}
+          </dd>
+          {m.data.source.permalink && (
+            <>
+              <dt>Slackリンク</dt>
+              <dd><a href={m.data.source.permalink} target="_blank" rel="noreferrer">Slackで開く</a></dd>
+            </>
+          )}
           <dt>対応要否</dt><dd>{String(m.data.requiresAction)}</dd>
           <dt>返信要否</dt><dd>{String(m.data.requiresReply)}</dd>
           <dt>優先度</dt><dd>{m.data.priority}</dd>

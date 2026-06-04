@@ -13,8 +13,10 @@ export const slackMessageSchema = z.object({
   source: z.object({
     type: z.literal("slack"),
     channel: z.string(),
+    channelName: z.string().nullable().optional(),
     messageTs: z.string(),
     sender: z.string(),
+    senderName: z.string().nullable().optional(),
     permalink: z.string().nullable(),
   }),
   rawText: z.string(),

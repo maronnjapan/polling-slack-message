@@ -11,8 +11,10 @@ export interface SlackMessage {
   source: {
     type: "slack";
     channel: string;
+    channelName?: string | null;
     messageTs: string;
     sender: string;
+    senderName?: string | null;
     permalink: string | null;
   };
   rawText: string;

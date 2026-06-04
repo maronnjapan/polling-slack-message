@@ -26,12 +26,13 @@ export function MessagesPage() {
           {active.map((m) => (
             <tr key={m.id}>
               <td>{m.summary}</td>
-              <td>{m.source.sender}</td>
-              <td>{m.source.channel}</td>
+              <td>{m.source.senderName ?? m.source.sender}</td>
+              <td>{m.source.channelName ?? m.source.channel}</td>
               <td>{m.priority}</td>
               <td>{m.createdAt}</td>
               <td style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <a href={`#/messages/${m.id}`}>詳細</a>
+                {m.source.permalink && <a href={m.source.permalink} target="_blank" rel="noreferrer">Slackで開く</a>}
                 <button className="btn-sm" disabled={pending === m.id} onClick={() => markDone(m.id)}>
                   {pending === m.id ? "..." : "完了にする"}
                 </button>
@@ -55,11 +56,14 @@ export function MessagesPage() {
             {done.map((m) => (
               <tr key={m.id}>
                 <td>{m.summary}</td>
-                <td>{m.source.sender}</td>
-                <td>{m.source.channel}</td>
+                <td>{m.source.senderName ?? m.source.sender}</td>
+                <td>{m.source.channelName ?? m.source.channel}</td>
                 <td>{m.priority}</td>
                 <td>{m.createdAt}</td>
-                <td><a href={`#/messages/${m.id}`}>詳細</a></td>
+                <td style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  <a href={`#/messages/${m.id}`}>詳細</a>
+                  {m.source.permalink && <a href={m.source.permalink} target="_blank" rel="noreferrer">Slackで開く</a>}
+                </td>
               </tr>
             ))}
             {done.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "#64748b" }}>完了済みはありません</td></tr>}

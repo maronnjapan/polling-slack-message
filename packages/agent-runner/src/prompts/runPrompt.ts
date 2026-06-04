@@ -13,6 +13,11 @@ Slack MCPを使用して、未処理または最近のメッセージを取得�
 
 各メッセージについて、要約、自分宛てか、対応必要か、ToDo化必要か、返信必要か、優先度、ToDo、返信案、判断理由サマリ、関連ナレッジを生成してください。
 
+また、各メッセージのsourceフィールドには以下も含めてください:
+- senderName: Slack MCP の users_info 等でユーザーの表示名（display_name または real_name）を取得して設定。取得できない場合は null。
+- channelName: チャンネル情報（conversations_info 等）からチャンネル名を取得して設定。取得できない場合は null。
+- permalink: chat_getPermalink 等でメッセージのパーマリンクURLを取得して設定。取得できない場合は null。
+
 Slackへの返信や投稿は絶対に行わないでください。MCP設定や認証情報は変更しないでください。認証情報をdataやknowledgeやログに保存しないでください。
 
 結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。各JSONに対応するMarkdown確認用ファイルも保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。`;
