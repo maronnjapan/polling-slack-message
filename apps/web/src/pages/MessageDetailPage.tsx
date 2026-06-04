@@ -31,7 +31,10 @@ export function MessageDetailPage({ id }: { id: string }) {
             {busy ? "..." : m.data.status === "done" ? "未対応に戻す" : "完了にする"}
           </button>
         </div>
-        <p>{m.data.rawText}</p>
+        <details style={{ marginTop: "0.75rem" }}>
+          <summary style={{ cursor: "pointer", color: "#64748b", fontSize: "0.875rem" }}>元のメッセージを表示</summary>
+          <p style={{ marginTop: "0.5rem", whiteSpace: "pre-wrap" }}>{m.data.rawText}</p>
+        </details>
         <dl>
           <dt>送信者</dt>
           <dd>
