@@ -8,6 +8,7 @@ import { MessagesPage } from "./pages/MessagesPage";
 import { RepliesPage } from "./pages/RepliesPage";
 import { ReplyDetailPage } from "./pages/ReplyDetailPage";
 import { RunsPage } from "./pages/RunsPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { TodoDetailPage } from "./pages/TodoDetailPage";
 import { TodosPage } from "./pages/TodosPage";
 
@@ -22,6 +23,7 @@ function render(path: string) {
   if (parts[0] === "replies") return <RepliesPage />;
   if (parts[0] === "runs") return <RunsPage />;
   if (parts[0] === "knowledge") return <KnowledgePage />;
+  if (parts[0] === "settings") return <SettingsPage />;
   return <DashboardPage />;
 }
 

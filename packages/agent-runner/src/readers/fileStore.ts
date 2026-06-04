@@ -1,8 +1,24 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { ChatTargetType } from "shared/types";
-import { agentRunSchema, chatThreadSchema, replySchema, slackMessageSchema, todoSchema } from "shared/schemas";
+import type { AppSettings, ChatTargetType } from "shared/types";
+import { agentRunSchema, appSettingsSchema, chatThreadSchema, replySchema, slackMessageSchema, todoSchema } from "shared/schemas";
 import { dataDir, knowledgeDir } from "./paths.js";
+
+const settingsPath = path.join(dataDir, "settings.json");
+
+export async function readSettings(): Promise<AppSettings> {
+  try {
+    const raw = JSON.parse(await fs.readFile(settingsPath, "utf8"));
+    return appSettingsSchema.parse(raw);
+  } catch {
+    return appSettingsSchema.parse({});
+  }
+}
+
+export async function writeSettings(settings: AppSettings): Promise<void> {
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, "utf8");
+}
 
 export async function ensureDataDirs() {
   await Promise.all(["messages", "todos", "replies", "chats", "runs"].map((d) => fs.mkdir(path.join(dataDir, d), { recursive: true })));

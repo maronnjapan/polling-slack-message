@@ -1,25 +1,124 @@
 import { randomUUID } from "node:crypto";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import type { AgentRun, ChatTargetType } from "shared/types";
 import { nowIso } from "shared/utils";
-import { runCodex } from "../codex/runCodex.js";
-import { ensureDataDirs, findChat, findTargetContext } from "../readers/fileStore.js";
+import { needsSlackMcpApproval, runCodex, slackMcpApprovalTools } from "../codex/runCodex.js";
+import { ensureDataDirs, findChat, findTargetContext, readMessages, readReplies, readRuns, readSettings, readTodos } from "../readers/fileStore.js";
+import { dataDir } from "../readers/paths.js";
 import { writeChat, writeRun } from "../writers/writeData.js";
 import { buildChatPrompt } from "../prompts/chatPrompt.js";
-import { normalRunPrompt, setupPrompt } from "../prompts/runPrompt.js";
+import { buildNormalRunPrompt, setupPrompt } from "../prompts/runPrompt.js";
 
 function runId() {
   return `run-${new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14)}`;
 }
 
+function createRun(type: AgentRun["type"], startedAt: string): AgentRun {
+  return {
+    id: runId(),
+    type,
+    status: "running",
+    startedAt,
+    finishedAt: null,
+    createdMessages: [],
+    createdTodos: [],
+    createdReplies: [],
+    errors: [],
+    approvalRequest: null,
+  };
+}
+
+function markApprovalRequired(run: AgentRun, result: Awaited<ReturnType<typeof runCodex>>, requestedAt: string) {
+  run.status = "approval_required";
+  run.finishedAt = requestedAt;
+  run.approvalRequest = {
+    type: "slack_mcp_tools",
+    status: "pending",
+    requestedAt,
+    tools: slackMcpApprovalTools,
+    reason: "Slack MCP tool execution requires human approval before Codex can continue.",
+  };
+  run.errors.push({
+    message: "Slack MCP tool approval required",
+    command: result.command,
+    startedAt: run.startedAt,
+    finishedAt: requestedAt,
+    exitCode: result.exitCode,
+    stderrSummary: result.stderr.slice(0, 1000),
+  });
+}
+
+function markFinished(run: AgentRun, result: Awaited<ReturnType<typeof runCodex>>, startedAt: string) {
+  run.finishedAt = nowIso();
+  run.status = result.exitCode === 0 ? "success" : "failed";
+  if (result.exitCode !== 0) {
+    run.errors.push({
+      message: "Codex CLI execution failed",
+      command: result.command,
+      startedAt,
+      finishedAt: run.finishedAt,
+      exitCode: result.exitCode,
+      stderrSummary: result.stderr.slice(0, 1000),
+    });
+  }
+}
+
+async function readCodexRequestFromLog(logPath: string) {
+  const log = await fs.readFile(logPath, "utf8");
+  const requestStart = log.lastIndexOf("[request]");
+  const promptStartMarker = "[request.prompt]";
+  const promptEndMarker = "[/request.prompt]";
+  const promptStart = log.indexOf(promptStartMarker, requestStart);
+  const promptEnd = log.indexOf(promptEndMarker, promptStart);
+  if (requestStart < 0 || promptStart < 0 || promptEnd < 0) {
+    throw new Error(`Codex request prompt not found in run log: ${path.basename(logPath)}`);
+  }
+
+  const requestHeader = log.slice(requestStart, promptStart);
+  const modeMatch = requestHeader.match(/^mode: (setup|normal)$/m);
+  const mode = (modeMatch?.[1] ?? "normal") as "setup" | "normal";
+  const prompt = log.slice(promptStart + promptStartMarker.length, promptEnd).replace(/^\r?\n/, "");
+  return { mode, prompt };
+}
+
+async function snapshotIds() {
+  const [messages, todos, replies] = await Promise.all([readMessages(), readTodos(), readReplies()]);
+  return {
+    messages: new Set(messages.map((m) => m.id)),
+    todos: new Set(todos.map((t) => t.id)),
+    replies: new Set(replies.map((r) => r.id)),
+  };
+}
+
+async function diffCreated(before: Awaited<ReturnType<typeof snapshotIds>>) {
+  const [messages, todos, replies] = await Promise.all([readMessages(), readTodos(), readReplies()]);
+  return {
+    messages: messages.filter((m) => !before.messages.has(m.id)).map((m) => m.id),
+    todos: todos.filter((t) => !before.todos.has(t.id)).map((t) => t.id),
+    replies: replies.filter((r) => !before.replies.has(r.id)).map((r) => r.id),
+  };
+}
+
 export async function executeCodexRun(type: "setup" | "manual" | "scheduled") {
   await ensureDataDirs();
   const startedAt = nowIso();
-  const run: AgentRun = { id: runId(), type, status: "running", startedAt, finishedAt: null, createdMessages: [], createdTodos: [], createdReplies: [], errors: [] };
+  const run = createRun(type, startedAt);
   await writeRun(run);
-  const result = await runCodex(type === "setup" ? setupPrompt : normalRunPrompt, type === "setup" ? "setup" : "normal");
-  run.finishedAt = nowIso();
-  run.status = result.exitCode === 0 ? "success" : "failed";
-  if (result.exitCode !== 0) run.errors.push({ message: "Codex CLI execution failed", command: result.command, startedAt, finishedAt: run.finishedAt, exitCode: result.exitCode, stderrSummary: result.stderr.slice(0, 1000) });
+  const before = await snapshotIds();
+  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
+  const settings = type !== "setup" ? await readSettings() : null;
+  const prompt = type === "setup" ? setupPrompt : buildNormalRunPrompt(settings?.allowedChannels);
+  const result = await runCodex(prompt, type === "setup" ? "setup" : "normal", logPath);
+  const created = await diffCreated(before);
+  run.createdMessages = created.messages;
+  run.createdTodos = created.todos;
+  run.createdReplies = created.replies;
+  if (needsSlackMcpApproval(result)) {
+    markApprovalRequired(run, result, nowIso());
+  } else {
+    markFinished(run, result, startedAt);
+  }
   await writeRun(run);
   return run;
 }
@@ -34,19 +133,55 @@ export async function executeChat(targetType: ChatTargetType, targetId: string, 
   await writeChat(chat);
 
   const startedAt = nowIso();
-  const run: AgentRun = { id: runId(), type: "chat", status: "running", startedAt, finishedAt: null, createdMessages: [], createdTodos: [], createdReplies: [], errors: [] };
+  const run = createRun("chat", startedAt);
   await writeRun(run);
+  const before = await snapshotIds();
   const context = await findTargetContext(targetType, targetId);
-  const result = await runCodex(buildChatPrompt(targetType, targetId, message, context), "normal");
-  run.finishedAt = nowIso();
-  run.status = result.exitCode === 0 ? "success" : "failed";
-  if (result.exitCode !== 0) {
+  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
+  const result = await runCodex(buildChatPrompt(targetType, targetId, message, context), "normal", logPath);
+  const created = await diffCreated(before);
+  run.createdMessages = created.messages;
+  run.createdTodos = created.todos;
+  run.createdReplies = created.replies;
+  if (needsSlackMcpApproval(result)) {
+    markApprovalRequired(run, result, nowIso());
+  } else {
+    markFinished(run, result, startedAt);
+  }
+  if (run.status === "failed") {
     const fallback = "Codex CLIで回答生成できませんでした。Codex CLI、profile slack-assistant、MCP設定を確認してください。";
-    chat.messages.push({ role: "assistant", content: fallback, createdAt: run.finishedAt });
-    chat.updatedAt = run.finishedAt;
-    run.errors.push({ message: "Codex CLI chat execution failed", command: result.command, startedAt, finishedAt: run.finishedAt, exitCode: result.exitCode, stderrSummary: result.stderr.slice(0, 1000) });
+    const failedAt = run.finishedAt ?? nowIso();
+    chat.messages.push({ role: "assistant", content: fallback, createdAt: failedAt });
+    chat.updatedAt = failedAt;
     await writeChat(chat);
   }
   await writeRun(run);
   return { chat, run };
+}
+
+export async function approveCodexRun(runId: string) {
+  await ensureDataDirs();
+  const run = (await readRuns()).find((item) => item.id === runId);
+  if (!run) throw new Error(`Run not found: ${runId}`);
+  if (run.status !== "approval_required" || run.approvalRequest?.status !== "pending") {
+    throw new Error(`Run is not waiting for approval: ${runId}`);
+  }
+
+  const approvedAt = nowIso();
+  const logPath = path.join(dataDir, "runs", `${run.id}.log`);
+  const request = await readCodexRequestFromLog(logPath);
+  run.status = "running";
+  run.finishedAt = null;
+  run.approvalRequest = { ...run.approvalRequest, status: "approved", approvedAt };
+  await writeRun(run);
+
+  const before = await snapshotIds();
+  const result = await runCodex(request.prompt, request.mode, logPath, { approveSlackMcpTools: true });
+  const created = await diffCreated(before);
+  run.createdMessages = [...new Set([...run.createdMessages, ...created.messages])];
+  run.createdTodos = [...new Set([...run.createdTodos, ...created.todos])];
+  run.createdReplies = [...new Set([...run.createdReplies, ...created.replies])];
+  markFinished(run, result, approvedAt);
+  await writeRun(run);
+  return run;
 }

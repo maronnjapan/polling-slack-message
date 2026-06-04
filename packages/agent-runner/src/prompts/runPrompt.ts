@@ -1,5 +1,11 @@
-export const normalRunPrompt = `あなたはSlack問い合わせ整理アシスタントです。
+export function buildNormalRunPrompt(allowedChannels: string[] = []): string {
+  const channelRestriction =
+    allowedChannels.length > 0
+      ? `\n読み取り対象チャンネルを以下に限定してください（チャンネルIDまたはチャンネル名）:\n${allowedChannels.map((c) => `- ${c}`).join("\n")}\nそれ以外のチャンネルのメッセージは絶対に読み取らないでください。\n`
+      : "";
 
+  return `あなたはSlack問い合わせ整理アシスタントです。
+${channelRestriction}
 Slack MCPを使用して、未処理または最近のメッセージを取得してください。
 取得したメッセージのうち、自分宛ての問い合わせ、対応が必要な依頼、返信した方がよい内容、ToDo化すべき内容を抽出してください。
 
@@ -10,6 +16,7 @@ Slack MCPを使用して、未処理または最近のメッセージを取得�
 Slackへの返信や投稿は絶対に行わないでください。MCP設定や認証情報は変更しないでください。認証情報をdataやknowledgeやログに保存しないでください。
 
 結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。各JSONに対応するMarkdown確認用ファイルも保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。`;
+}
 
 export const setupPrompt = `Slack問い合わせ整理アプリの初回セットアップ確認です。
 

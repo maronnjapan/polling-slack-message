@@ -1,9 +1,10 @@
 export type Priority = "low" | "normal" | "high" | "urgent";
+export type MessageStatus = "active" | "done";
 export type TodoStatus = "open" | "in_progress" | "done" | "dismissed";
 export type ReplyStatus = "draft" | "edited" | "approved" | "dismissed";
 export type ChatTargetType = "slack_message" | "todo" | "reply";
 export type RunType = "setup" | "manual" | "scheduled" | "chat";
-export type RunStatus = "success" | "failed" | "partial" | "running";
+export type RunStatus = "success" | "failed" | "partial" | "running" | "approval_required";
 
 export interface SlackMessage {
   id: string;
@@ -22,6 +23,7 @@ export interface SlackMessage {
   priority: Priority;
   relatedKnowledge: string[];
   reasonSummary: string;
+  status: MessageStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +75,15 @@ export interface RunError {
   stderrSummary?: string;
 }
 
+export interface RunApprovalRequest {
+  type: "slack_mcp_tools";
+  status: "pending" | "approved";
+  requestedAt: string;
+  approvedAt?: string;
+  tools: string[];
+  reason: string;
+}
+
 export interface AgentRun {
   id: string;
   type: RunType;
@@ -83,10 +94,15 @@ export interface AgentRun {
   createdTodos: string[];
   createdReplies: string[];
   errors: RunError[];
+  approvalRequest?: RunApprovalRequest | null;
 }
 
 export interface KnowledgeFile {
   path: string;
   updatedAt: string;
   content?: string;
+}
+
+export interface AppSettings {
+  allowedChannels: string[];
 }

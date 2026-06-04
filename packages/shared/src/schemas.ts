@@ -1,11 +1,12 @@
 import { z } from "zod";
 
 export const prioritySchema = z.enum(["low", "normal", "high", "urgent"]);
+export const messageStatusSchema = z.enum(["active", "done"]);
 export const todoStatusSchema = z.enum(["open", "in_progress", "done", "dismissed"]);
 export const replyStatusSchema = z.enum(["draft", "edited", "approved", "dismissed"]);
 export const chatTargetTypeSchema = z.enum(["slack_message", "todo", "reply"]);
 export const runTypeSchema = z.enum(["setup", "manual", "scheduled", "chat"]);
-export const runStatusSchema = z.enum(["success", "failed", "partial", "running"]);
+export const runStatusSchema = z.enum(["success", "failed", "partial", "running", "approval_required"]);
 
 export const slackMessageSchema = z.object({
   id: z.string().min(1),
@@ -24,6 +25,7 @@ export const slackMessageSchema = z.object({
   priority: prioritySchema,
   relatedKnowledge: z.array(z.string()),
   reasonSummary: z.string(),
+  status: messageStatusSchema.optional().default("active"),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -75,6 +77,15 @@ export const runErrorSchema = z.object({
   stderrSummary: z.string().optional(),
 });
 
+export const runApprovalRequestSchema = z.object({
+  type: z.literal("slack_mcp_tools"),
+  status: z.enum(["pending", "approved"]),
+  requestedAt: z.string(),
+  approvedAt: z.string().optional(),
+  tools: z.array(z.string()),
+  reason: z.string(),
+});
+
 export const agentRunSchema = z.object({
   id: z.string(),
   type: runTypeSchema,
@@ -85,8 +96,17 @@ export const agentRunSchema = z.object({
   createdTodos: z.array(z.string()),
   createdReplies: z.array(z.string()),
   errors: z.array(runErrorSchema),
+  approvalRequest: runApprovalRequestSchema.nullable().optional(),
 });
 
 export const chatRequestSchema = z.object({ message: z.string().min(1) });
+export const messagePatchSchema = z.object({ status: messageStatusSchema.optional() });
 export const todoPatchSchema = z.object({ status: todoStatusSchema.optional(), priority: prioritySchema.optional(), due: z.string().nullable().optional() });
 export const replyPatchSchema = z.object({ status: replyStatusSchema.optional(), draftReply: z.string().optional(), tone: z.string().optional() });
+
+export const appSettingsSchema = z.object({
+  allowedChannels: z.array(z.string()).default([]),
+});
+export const settingsPatchSchema = z.object({
+  allowedChannels: z.array(z.string()).optional(),
+});

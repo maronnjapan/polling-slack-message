@@ -1,8 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { readChats, readKnowledgeFiles, readMessages, readReplies, readRuns, readTodos, writeReply, writeTodo } from "agent-runner";
-import type { ReplyDraft, TodoItem } from "shared/types";
+import { readChats, readKnowledgeFiles, readMessages, readReplies, readRuns, readSettings, readTodos, writeMessage, writeReply, writeTodo, writeSettings } from "agent-runner";
+import type { AppSettings, ReplyDraft, SlackMessage, TodoItem } from "shared/types";
 import { byUpdatedDesc, nowIso } from "shared/utils";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../");
@@ -18,6 +18,13 @@ export const listRuns = async () => (await readRuns()).sort((a, b) => b.startedA
 export const getRun = async (id: string) => (await readRuns()).find((r) => r.id === id) ?? null;
 export const getChatForTarget = async (type: any, id: string) => (await readChats()).find((c) => c.target.type === type && c.target.id === id) ?? null;
 
+export async function patchMessage(id: string, patch: Partial<SlackMessage>) {
+  const msg = await getMessage(id);
+  if (!msg) return null;
+  const updated = { ...msg, ...patch, id: msg.id, createdAt: msg.createdAt, updatedAt: nowIso() };
+  await writeMessage(updated as SlackMessage);
+  return updated;
+}
 export async function patchTodo(id: string, patch: Partial<TodoItem>) {
   const todo = await getTodo(id);
   if (!todo) return null;
@@ -33,6 +40,14 @@ export async function patchReply(id: string, patch: Partial<ReplyDraft>) {
   return updated;
 }
 export const listKnowledge = async () => (await readKnowledgeFiles()).map(({ path, updatedAt }) => ({ path, updatedAt }));
+
+export const getSettings = () => readSettings();
+export async function patchSettings(patch: Partial<AppSettings>) {
+  const current = await readSettings();
+  const updated: AppSettings = { ...current, ...patch };
+  await writeSettings(updated);
+  return updated;
+}
 export async function getKnowledge(filePath: string) {
   const normalized = path.normalize(filePath).replace(/^[/\\]+/, "");
   if (normalized.startsWith("..") || path.isAbsolute(normalized) || !normalized.endsWith(".md")) return null;

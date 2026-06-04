@@ -7,3 +7,5 @@ dist/
 apps/web/dist/
 apps/server/dist/
 .DS_Store
+
+.codex

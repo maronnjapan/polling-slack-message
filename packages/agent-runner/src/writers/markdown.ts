@@ -13,5 +13,15 @@ export function chatMarkdown(c: ChatThread) {
   return `# Chat\n\n## Target\n\n${c.target.type}:${c.target.id}\n\n${c.messages.map((m) => `## ${m.role === "user" ? "User" : "Assistant"}\n\n${m.content}\n`).join("\n")}`;
 }
 export function runMarkdown(r: AgentRun) {
-  return `# Run\n\n- id: ${r.id}\n- type: ${r.type}\n- status: ${r.status}\n- startedAt: ${r.startedAt}\n- finishedAt: ${r.finishedAt ?? ""}\n- createdMessages: ${r.createdMessages.length}\n- createdTodos: ${r.createdTodos.length}\n- createdReplies: ${r.createdReplies.length}\n\n## Errors\n\n${r.errors.map((e) => `- ${e.message}`).join("\n") || "なし"}\n`;
+  const approval = r.approvalRequest
+    ? [
+        `- type: ${r.approvalRequest.type}`,
+        `- status: ${r.approvalRequest.status}`,
+        `- requestedAt: ${r.approvalRequest.requestedAt}`,
+        `- approvedAt: ${r.approvalRequest.approvedAt ?? ""}`,
+        `- tools: ${r.approvalRequest.tools.join(", ")}`,
+        `- reason: ${r.approvalRequest.reason}`,
+      ].join("\n")
+    : "なし";
+  return `# Run\n\n- id: ${r.id}\n- type: ${r.type}\n- status: ${r.status}\n- startedAt: ${r.startedAt}\n- finishedAt: ${r.finishedAt ?? ""}\n- createdMessages: ${r.createdMessages.length}\n- createdTodos: ${r.createdTodos.length}\n- createdReplies: ${r.createdReplies.length}\n\n## Approval\n\n${approval}\n\n## Errors\n\n${r.errors.map((e) => `- ${e.message}`).join("\n") || "なし"}\n`;
 }

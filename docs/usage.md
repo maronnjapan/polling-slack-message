@@ -19,7 +19,7 @@ pnpm dev
 | --- | --- | --- |
 | API (Hono) | `data` / `knowledge` を読み書き | http://127.0.0.1:8787 |
 | Web (Vite SPA) | 保存済みデータの閲覧・操作UI | http://127.0.0.1:5173 |
-| Agent watch | 60秒間隔で Codex 実行（定期取得・整理） | （バックグラウンド） |
+| Agent watch | 600秒間隔で Codex 実行（定期取得・整理） | （バックグラウンド） |
 
 ブラウザで **http://127.0.0.1:5173** を開くとUIが表示されます。
 
@@ -54,7 +54,7 @@ pnpm dev:web    # http://127.0.0.1:5173
 | `pnpm agent:setup` | 初回疎通確認（Codex / profile / MCP / Slack取得 / data書き込み） |
 | `pnpm agent:run` | 1回だけ手動実行（メッセージ取得→整理→ToDo/返信案生成） |
 | `pnpm agent:once` | `agent:run` と同じ（1回実行） |
-| `pnpm agent:watch` | 60秒間隔で定期実行（常駐） |
+| `pnpm agent:watch` | 600秒間隔で定期実行（常駐） |
 
 ### 手動で1回実行
 
