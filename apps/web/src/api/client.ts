@@ -36,6 +36,7 @@ export const api = {
   agentSetup: () => request<AgentRun>("/agent/setup", { method: "POST" }),
   knowledge: () => request<KnowledgeFile[]>("/knowledge"),
   knowledgeFile: (path: string) => request<KnowledgeFile>(`/knowledge/${path}`),
+  saveKnowledge: (path: string, content: string) => request<KnowledgeFile>(`/knowledge/${path}`, { method: "PUT", body: JSON.stringify({ content }) }),
   settings: () => request<AppSettings>("/settings"),
   patchSettings: (patch: Partial<AppSettings>) => request<AppSettings>("/settings", { method: "PATCH", body: JSON.stringify(patch) }),
   slackSetupStatus: () => request<SlackMcpSetupStatus>("/slack/setup/status"),

@@ -54,3 +54,12 @@ export async function getKnowledge(filePath: string) {
   const fullPath = path.join(knowledgeRoot, normalized);
   try { return { path: normalized.split(path.sep).join("/"), updatedAt: (await fs.stat(fullPath)).mtime.toISOString(), content: await fs.readFile(fullPath, "utf8") }; } catch { return null; }
 }
+
+export async function saveKnowledge(filePath: string, content: string) {
+  const normalized = path.normalize(filePath).replace(/^[/\\]+/, "");
+  if (normalized.startsWith("..") || path.isAbsolute(normalized) || !normalized.endsWith(".md")) return null;
+  const fullPath = path.join(knowledgeRoot, normalized);
+  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+  await fs.writeFile(fullPath, content, "utf8");
+  return { path: normalized.split(path.sep).join("/"), updatedAt: (await fs.stat(fullPath)).mtime.toISOString(), content };
+}

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { chatRequestSchema, chatTargetTypeSchema, messagePatchSchema, replyPatchSchema, settingsPatchSchema, todoPatchSchema } from "shared/schemas";
+import { chatRequestSchema, chatTargetTypeSchema, knowledgeSaveSchema, messagePatchSchema, replyPatchSchema, settingsPatchSchema, todoPatchSchema } from "shared/schemas";
 import { approveCodexRun, executeChat, executeCodexRun } from "agent-runner";
-import { getChatForTarget, getKnowledge, getMessage, getReply, getRun, getTodo, listKnowledge, listMessages, listReplies, listRuns, listTodos, patchMessage, patchReply, patchTodo, getSettings, patchSettings } from "../services/dataService.js";
+import { getChatForTarget, getKnowledge, getMessage, getReply, getRun, getTodo, listKnowledge, listMessages, listReplies, listRuns, listTodos, patchMessage, patchReply, patchTodo, getSettings, patchSettings, saveKnowledge } from "../services/dataService.js";
 import { getSlackMcpSetupStatus, applySlackMcpSetup } from "agent-runner";
 
 const routes = new Hono();
@@ -34,6 +34,7 @@ routes.post("/agent/run", async (c) => c.json(await executeCodexRun("manual")));
 routes.post("/agent/setup", async (c) => c.json(await executeCodexRun("setup")));
 routes.get("/knowledge", async (c) => c.json(await listKnowledge()));
 routes.get("/knowledge/:path{.*}", async (c) => { const item = await getKnowledge(c.req.param("path")); return item ? c.json(item) : notFound(c); });
+routes.put("/knowledge/:path{.*}", async (c) => { const body = knowledgeSaveSchema.parse(await c.req.json()); const item = await saveKnowledge(c.req.param("path"), body.content); return item ? c.json(item) : c.json({ error: "invalid path" }, 400); });
 routes.get("/settings", async (c) => c.json(await getSettings()));
 routes.patch("/settings", async (c) => { const body = settingsPatchSchema.parse(await c.req.json()); return c.json(await patchSettings(body)); });
 routes.get("/slack/setup/status", (c) => c.json(getSlackMcpSetupStatus()));

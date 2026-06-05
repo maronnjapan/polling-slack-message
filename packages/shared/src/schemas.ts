@@ -120,3 +120,5 @@ export const settingsPatchSchema = z.object({
   allowedChannels: z.array(z.string()).optional(),
   channelConfigs: z.record(z.string(), channelConfigSchema).optional(),
 });
+
+export const knowledgeSaveSchema = z.object({ content: z.string() });
