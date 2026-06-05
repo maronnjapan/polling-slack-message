@@ -1,8 +1,151 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../hooks/useAsync";
+import type { KnowledgeFile } from "shared/types";
 
 type Mode = "view" | "edit" | "create";
+
+type TreeNode = {
+  name: string;
+  path: string;
+  type: "file" | "dir";
+  children: TreeNode[];
+  updatedAt?: string;
+};
+
+function buildTree(files: KnowledgeFile[]): TreeNode[] {
+  const root: TreeNode[] = [];
+  for (const file of files) {
+    const parts = file.path.split("/");
+    let nodes = root;
+    let pathSoFar = "";
+    for (let i = 0; i < parts.length - 1; i++) {
+      const seg = parts[i];
+      pathSoFar = pathSoFar ? `${pathSoFar}/${seg}` : seg;
+      let dir = nodes.find((n) => n.type === "dir" && n.name === seg);
+      if (!dir) {
+        dir = { name: seg, path: pathSoFar, type: "dir", children: [] };
+        nodes.push(dir);
+      }
+      nodes = dir.children;
+    }
+    const name = parts[parts.length - 1];
+    nodes.push({ name, path: file.path, type: "file", children: [], updatedAt: file.updatedAt });
+  }
+  const sort = (nodes: TreeNode[]) => {
+    nodes.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    nodes.forEach((n) => sort(n.children));
+  };
+  sort(root);
+  return root;
+}
+
+function FileTreeNode({
+  node,
+  selected,
+  onSelect,
+  depth = 0,
+}: {
+  node: TreeNode;
+  selected: string | null;
+  onSelect: (path: string) => void;
+  depth?: number;
+}) {
+  const [open, setOpen] = useState(true);
+  const indent = depth * 14;
+
+  if (node.type === "dir") {
+    return (
+      <div>
+        <button
+          onClick={() => setOpen(!open)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            width: "100%",
+            textAlign: "left",
+            background: "transparent",
+            color: "#374151",
+            padding: "3px 6px",
+            paddingLeft: `${indent + 6}px`,
+            borderRadius: "5px",
+            fontSize: "0.84rem",
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ fontSize: "0.6rem", opacity: 0.6, width: "10px", flexShrink: 0 }}>
+            {open ? "▼" : "▶"}
+          </span>
+          <span style={{ marginRight: "4px" }}>
+            {open ? "📂" : "📁"}
+          </span>
+          {node.name}
+        </button>
+        {open && (
+          <div>
+            {node.children.map((child) => (
+              <FileTreeNode
+                key={child.path}
+                node={child}
+                selected={selected}
+                onSelect={onSelect}
+                depth={depth + 1}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const isSelected = selected === node.path;
+  return (
+    <button
+      onClick={() => onSelect(node.path)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "5px",
+        width: "100%",
+        textAlign: "left",
+        background: isSelected ? "#c7d2fe" : "transparent",
+        color: isSelected ? "#1e3a8a" : "#374151",
+        padding: "3px 6px",
+        paddingLeft: `${indent + 6}px`,
+        borderRadius: "5px",
+        fontSize: "0.84rem",
+        fontWeight: isSelected ? 600 : 400,
+      }}
+    >
+      <span style={{ width: "10px", flexShrink: 0 }} />
+      <span style={{ marginRight: "4px" }}>📄</span>
+      {node.name}
+    </button>
+  );
+}
+
+function FileTree({
+  files,
+  selected,
+  onSelect,
+}: {
+  files: KnowledgeFile[];
+  selected: string | null;
+  onSelect: (path: string) => void;
+}) {
+  const tree = buildTree(files);
+  return (
+    <div style={{ fontFamily: "ui-monospace, monospace" }}>
+      {tree.map((node) => (
+        <FileTreeNode key={node.path} node={node} selected={selected} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
 
 export function KnowledgePage() {
   const files = useAsync(api.knowledge, []);
@@ -70,19 +213,17 @@ export function KnowledgePage() {
         <button className="btn-sm" onClick={handleCreate}>+ 新規追加</button>
       </div>
       <div className="split">
-        <section className="card">
-          <h2>ファイル一覧</h2>
-          {files.data?.map((f) => (
-            <button
-              className="link-button"
-              key={f.path}
-              onClick={() => handleSelect(f.path)}
-              style={selected === f.path ? { background: "#c7d2fe" } : undefined}
-            >
-              {f.path}
-              <small>{f.updatedAt}</small>
-            </button>
-          ))}
+        <section className="card" style={{ padding: "0.75rem" }}>
+          <div style={{ padding: "0 0.25rem 0.5rem", borderBottom: "1px solid #e5e7eb", marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              ファイル一覧
+            </span>
+          </div>
+          {files.data && files.data.length > 0 ? (
+            <FileTree files={files.data} selected={selected} onSelect={handleSelect} />
+          ) : (
+            <p style={{ color: "#9ca3af", fontSize: "0.85rem", padding: "0.5rem" }}>ファイルがありません</p>
+          )}
         </section>
         <section className="card">
           {mode === "view" && (
