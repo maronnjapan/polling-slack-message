@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import { ChatPanel } from "../components/ChatPanel";
+import { NotesPanel } from "../components/NotesPanel";
 import { useAsync } from "../hooks/useAsync";
 import type { TodoStatus } from "shared/types";
 
@@ -62,6 +63,7 @@ export function TodoDetailPage({ id }: { id: string }) {
           <p key={r.id}><a href={`#/replies/${r.id}`}>{r.draftReply}</a></p>
         ))}
       </section>
+      <NotesPanel notes={todo.data.notes} onAdd={async (body) => { await api.addTodoNote(id, body); todo.reload(); }} />
       <ChatPanel targetType="todo" targetId={id} />
     </>
   );

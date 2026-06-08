@@ -1,8 +1,9 @@
 import { promises as fs } from "node:fs";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readChats, readKnowledgeFiles, readMessages, readReplies, readRuns, readSettings, readTodos, writeMessage, writeReply, writeTodo, writeSettings } from "agent-runner";
-import type { AppSettings, ReplyDraft, SlackMessage, TodoItem } from "shared/types";
+import type { AppSettings, Note, ReplyDraft, SlackMessage, TodoItem } from "shared/types";
 import { byUpdatedDesc, nowIso } from "shared/utils";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../");
@@ -23,6 +24,23 @@ export async function patchMessage(id: string, patch: Partial<SlackMessage>) {
   if (!msg) return null;
   const updated = { ...msg, ...patch, id: msg.id, createdAt: msg.createdAt, updatedAt: nowIso() };
   await writeMessage(updated as SlackMessage);
+  return updated;
+}
+function newNote(body: string): Note {
+  return { id: `note-${randomUUID()}`, body, createdAt: nowIso(), appliedAt: null };
+}
+export async function addMessageNote(id: string, body: string) {
+  const msg = await getMessage(id);
+  if (!msg) return null;
+  const updated = { ...msg, notes: [...(msg.notes ?? []), newNote(body)], updatedAt: nowIso() };
+  await writeMessage(updated as SlackMessage);
+  return updated;
+}
+export async function addTodoNote(id: string, body: string) {
+  const todo = await getTodo(id);
+  if (!todo) return null;
+  const updated = { ...todo, notes: [...(todo.notes ?? []), newNote(body)], updatedAt: nowIso() };
+  await writeTodo(updated as TodoItem);
   return updated;
 }
 export async function patchTodo(id: string, patch: Partial<TodoItem>) {

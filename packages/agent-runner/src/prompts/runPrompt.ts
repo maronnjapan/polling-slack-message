@@ -32,9 +32,17 @@ Slack MCPを使用して、未処理または最近のメッセージを取得�
 - channelName: チャンネル情報（conversations_info 等）からチャンネル名を取得して設定。取得できない場合は null。
 - permalink: chat_getPermalink 等でメッセージのパーマリンクURLを取得して設定。取得できない場合は null。
 
+【ユーザーメモの反映】
+data/messages配下の各メッセージJSON、およびdata/todos配下の各ToDo JSONには、ユーザーが手書きしたメモを保持する notes 配列があります。各メモは { id, body, createdAt, appliedAt } の形式です。
+- appliedAt が null のメモのみを処理対象としてください。これらはユーザーが新たに書いた未反映の指示です。
+- appliedAt に日時が入っているメモは既に反映済みです。内容を読み込まず、判断材料にもせず、そのまま変更せずに残してください。
+- 未反映メモ（appliedAt が null）の内容に従って、対象のメッセージやToDo、および関連する返信案（data/replies）の内容を最新の状態に更新してください。例: 要約・対応要否・返信要否・優先度・status・ToDoのtitle/description/status/priority/due・返信案本文など、メモの指示に応じて適切に反映します。
+- 反映したメモは notes 配列から削除せず、その id と body を保持したまま appliedAt にISO8601形式の現在日時を設定してください。これにより次回以降のポーリングでは読み込まれなくなります。
+- メモを反映してアイテムを更新した場合は、そのアイテムの updatedAt も現在日時に更新してください。
+
 Slackへの返信や投稿は絶対に行わないでください。MCP設定や認証情報は変更しないでください。認証情報をdataやknowledgeやログに保存しないでください。
 
-結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。`;
+結果は仕様書にあるJSON形式でdata/messages, data/todos, data/replies配下に保存してください。重複はsource.type, source.channel, source.messageTsで判定してください。新規に作成するメッセージやToDoには空の notes 配列（"notes": []）を含めてください。`;
 }
 
 export const setupPrompt = `Slack問い合わせ整理アプリの初回セットアップ確認です。

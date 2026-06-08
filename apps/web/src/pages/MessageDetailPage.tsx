@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import { ChatPanel } from "../components/ChatPanel";
+import { NotesPanel } from "../components/NotesPanel";
 import { useAsync } from "../hooks/useAsync";
 
 export function MessageDetailPage({ id }: { id: string }) {
@@ -66,6 +67,7 @@ export function MessageDetailPage({ id }: { id: string }) {
         <h2>関連返信案</h2>
         {relatedReplies.map((r) => <p key={r.id}><a href={`#/replies/${r.id}`}>{r.draftReply}</a></p>)}
       </section>
+      <NotesPanel notes={m.data.notes} onAdd={async (body) => { await api.addMessageNote(id, body); m.reload(); }} />
       <ChatPanel targetType="slack_message" targetId={id} />
     </>
   );

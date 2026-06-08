@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { chatRequestSchema, chatTargetTypeSchema, knowledgeSaveSchema, messagePatchSchema, replyPatchSchema, settingsPatchSchema, todoPatchSchema } from "shared/schemas";
+import { chatRequestSchema, chatTargetTypeSchema, knowledgeSaveSchema, messagePatchSchema, noteCreateSchema, replyPatchSchema, settingsPatchSchema, todoPatchSchema } from "shared/schemas";
 import { approveCodexRun, executeChat, executeCodexRun } from "agent-runner";
-import { getChatForTarget, getKnowledge, getMessage, getReply, getRun, getTodo, listKnowledge, listMessages, listReplies, listRuns, listTodos, patchMessage, patchReply, patchTodo, getSettings, patchSettings, saveKnowledge } from "../services/dataService.js";
+import { addMessageNote, addTodoNote, getChatForTarget, getKnowledge, getMessage, getReply, getRun, getTodo, listKnowledge, listMessages, listReplies, listRuns, listTodos, patchMessage, patchReply, patchTodo, getSettings, patchSettings, saveKnowledge } from "../services/dataService.js";
 import { getSlackMcpSetupStatus, applySlackMcpSetup } from "agent-runner";
 
 const routes = new Hono();
@@ -19,9 +19,11 @@ routes.get("/stats", async (c) => {
 routes.get("/messages", async (c) => c.json(await listMessages()));
 routes.get("/messages/:id", async (c) => { const item = await getMessage(c.req.param("id")); return item ? c.json(item) : notFound(c); });
 routes.patch("/messages/:id", async (c) => { const body = messagePatchSchema.parse(await c.req.json()) as any; const item = await patchMessage(c.req.param("id"), body); return item ? c.json(item) : notFound(c); });
+routes.post("/messages/:id/notes", async (c) => { const body = noteCreateSchema.parse(await c.req.json()); const item = await addMessageNote(c.req.param("id"), body.body); return item ? c.json(item) : notFound(c); });
 routes.get("/todos", async (c) => c.json(await listTodos()));
 routes.get("/todos/:id", async (c) => { const item = await getTodo(c.req.param("id")); return item ? c.json(item) : notFound(c); });
 routes.patch("/todos/:id", async (c) => { const body = todoPatchSchema.parse(await c.req.json()) as any; const item = await patchTodo(c.req.param("id"), body); return item ? c.json(item) : notFound(c); });
+routes.post("/todos/:id/notes", async (c) => { const body = noteCreateSchema.parse(await c.req.json()); const item = await addTodoNote(c.req.param("id"), body.body); return item ? c.json(item) : notFound(c); });
 routes.get("/replies", async (c) => c.json(await listReplies()));
 routes.get("/replies/:id", async (c) => { const item = await getReply(c.req.param("id")); return item ? c.json(item) : notFound(c); });
 routes.patch("/replies/:id", async (c) => { const body = replyPatchSchema.parse(await c.req.json()) as any; const item = await patchReply(c.req.param("id"), body); return item ? c.json(item) : notFound(c); });

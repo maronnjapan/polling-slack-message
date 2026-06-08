@@ -6,6 +6,15 @@ export type ChatTargetType = "slack_message" | "todo" | "reply";
 export type RunType = "setup" | "manual" | "scheduled" | "chat";
 export type RunStatus = "success" | "failed" | "partial" | "running" | "approval_required";
 
+export interface Note {
+  id: string;
+  body: string;
+  createdAt: string;
+  // AIがこのメモを内容に反映した日時。null の場合は未反映で、次回ポーリング時に反映対象になる。
+  // 値が入っているメモは反映済みのため、AIは次回以降読み込まない。
+  appliedAt: string | null;
+}
+
 export interface SlackMessage {
   id: string;
   source: {
@@ -26,6 +35,7 @@ export interface SlackMessage {
   relatedKnowledge: string[];
   reasonSummary: string;
   status: MessageStatus;
+  notes: Note[];
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +49,7 @@ export interface TodoItem {
   priority: Priority;
   due: string | null;
   reasonSummary: string;
+  notes: Note[];
   createdAt: string;
   updatedAt: string;
 }

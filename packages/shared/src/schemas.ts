@@ -8,6 +8,13 @@ export const chatTargetTypeSchema = z.enum(["slack_message", "todo", "reply"]);
 export const runTypeSchema = z.enum(["setup", "manual", "scheduled", "chat"]);
 export const runStatusSchema = z.enum(["success", "failed", "partial", "running", "approval_required"]);
 
+export const noteSchema = z.object({
+  id: z.string().min(1),
+  body: z.string(),
+  createdAt: z.string(),
+  appliedAt: z.string().nullable().default(null),
+});
+
 export const slackMessageSchema = z.object({
   id: z.string().min(1),
   source: z.object({
@@ -28,6 +35,7 @@ export const slackMessageSchema = z.object({
   relatedKnowledge: z.array(z.string()),
   reasonSummary: z.string(),
   status: messageStatusSchema.optional().default("active"),
+  notes: z.array(noteSchema).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -41,6 +49,7 @@ export const todoSchema = z.object({
   priority: prioritySchema,
   due: z.string().nullable(),
   reasonSummary: z.string(),
+  notes: z.array(noteSchema).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -103,6 +112,7 @@ export const agentRunSchema = z.object({
 });
 
 export const chatRequestSchema = z.object({ message: z.string().min(1) });
+export const noteCreateSchema = z.object({ body: z.string().min(1) });
 export const messagePatchSchema = z.object({ status: messageStatusSchema.optional() });
 export const todoPatchSchema = z.object({ status: todoStatusSchema.optional(), priority: prioritySchema.optional(), due: z.string().nullable().optional() });
 export const replyPatchSchema = z.object({ status: replyStatusSchema.optional(), draftReply: z.string().optional(), tone: z.string().optional() });
