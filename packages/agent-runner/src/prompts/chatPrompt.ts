@@ -5,6 +5,7 @@ export function buildChatPrompt(targetType: ChatTargetType, targetId: string, us
 
 ユーザーは、特定のSlackメッセージ、ToDo、または返信案について追加相談をしています。
 Slackへの返信や投稿は絶対に行わないでください。認証情報を保存しないでください。
+回答前にknowledge配下のMarkdown（knowledge/**/*.md）をすべて確認し、返信方針、ToDo判定ルール、人物メモ、プロジェクト文脈、用語、働き方に関する情報を回答へ反映してください。
 
 対象: ${targetType}:${targetId}
 ユーザー質問:

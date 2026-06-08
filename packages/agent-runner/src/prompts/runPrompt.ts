@@ -23,7 +23,7 @@ ${channelRestriction}
 Slack MCPを使用して、未処理または最近のメッセージを取得してください。
 取得したメッセージのうち、自分宛ての問い合わせ、対応が必要な依頼、返信した方がよい内容、ToDo化すべき内容を抽出してください。
 
-処理前にknowledge配下を確認してください。返信案を生成する場合はknowledge/reply-policy.mdを参照し、ToDo化を判断する場合はknowledge/rules/todo-detection-rules.mdを参照してください。
+処理前にknowledge配下のMarkdown（knowledge/**/*.md）をすべて確認し、内容を判断の前提として使用してください。特に、返信案を生成する場合はknowledge/reply-policy.mdとknowledge/rules/slack-reply-rules.mdを必ず参照し、ToDo化を判断する場合はknowledge/rules/todo-detection-rules.mdを必ず参照してください。人物名、プロジェクト名、用語、働き方に関係する内容があれば、knowledge/people、knowledge/project-context.md、knowledge/glossary.md、knowledge/work-style.mdも判断に反映してください。
 
 各メッセージについて、要約、自分宛てか、対応必要か、ToDo化必要か、返信必要か、優先度、ToDo、返信案、判断理由サマリ、関連ナレッジを生成してください。
 
