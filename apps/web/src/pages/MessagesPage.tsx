@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../hooks/useAsync";
+import { getMessageTitle } from "../lib/messages";
 
 export function MessagesPage() {
-  const { data, loading, error, reload } = useAsync(api.messages, []);
+  const { data, loading, error, reload } = useAsync(api.messages, [], { pollIntervalMs: 5000 });
   const [showDone, setShowDone] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
 
@@ -21,11 +22,14 @@ export function MessagesPage() {
       {loading && <p>読み込み中...</p>}
       {error && <p className="error">{error}</p>}
       <table>
-        <thead><tr><th>要約</th><th>送信者</th><th>チャンネル</th><th>優先度</th><th>作成日時</th><th></th></tr></thead>
+        <thead><tr><th>メッセージ</th><th>送信者</th><th>チャンネル</th><th>優先度</th><th>作成日時</th><th></th></tr></thead>
         <tbody>
           {active.map((m) => (
             <tr key={m.id}>
-              <td>{m.summary}</td>
+              <td className="message-cell">
+                <strong>{getMessageTitle(m)}</strong>
+                <span>{m.summary}</span>
+              </td>
               <td>{m.source.senderName ?? m.source.sender}</td>
               <td>{m.source.channelName ?? m.source.channel}</td>
               <td>{m.priority}</td>
@@ -51,11 +55,14 @@ export function MessagesPage() {
 
       {showDone && (
         <table style={{ marginTop: "0.5rem", opacity: 0.75 }}>
-          <thead><tr><th>要約</th><th>送信者</th><th>チャンネル</th><th>優先度</th><th>作成日時</th><th></th></tr></thead>
+          <thead><tr><th>メッセージ</th><th>送信者</th><th>チャンネル</th><th>優先度</th><th>作成日時</th><th></th></tr></thead>
           <tbody>
             {done.map((m) => (
               <tr key={m.id}>
-                <td>{m.summary}</td>
+                <td className="message-cell">
+                  <strong>{getMessageTitle(m)}</strong>
+                  <span>{m.summary}</span>
+                </td>
                 <td>{m.source.senderName ?? m.source.sender}</td>
                 <td>{m.source.channelName ?? m.source.channel}</td>
                 <td>{m.priority}</td>

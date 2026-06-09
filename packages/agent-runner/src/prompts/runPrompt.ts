@@ -25,7 +25,7 @@ Slack MCPを使用して、未処理または最近のメッセージを取得�
 
 処理前にknowledge配下のMarkdown（knowledge/**/*.md）をすべて確認し、内容を判断の前提として使用してください。特に、返信案を生成する場合はknowledge/reply-policy.mdとknowledge/rules/slack-reply-rules.mdを必ず参照し、ToDo化を判断する場合はknowledge/rules/todo-detection-rules.mdを必ず参照してください。人物名、プロジェクト名、用語、働き方に関係する内容があれば、knowledge/people、knowledge/project-context.md、knowledge/glossary.md、knowledge/work-style.mdも判断に反映してください。
 
-各メッセージについて、要約、自分宛てか、対応必要か、ToDo化必要か、返信必要か、優先度、ToDo、返信案、判断理由サマリ、関連ナレッジを生成してください。
+各メッセージについて、短いタイトル、要約、自分宛てか、対応必要か、ToDo化必要か、返信必要か、優先度、ToDo、返信案、判断理由サマリ、関連ナレッジを生成してください。タイトルは一覧や詳細画面の見出しとして読める短い名詞句または一文にし、要約とは別に message.title へ保存してください。
 
 また、各メッセージのsourceフィールドには以下も含めてください:
 - senderName: Slack MCP の users_info 等でユーザーの表示名（display_name または real_name）を取得して設定。取得できない場合は null。

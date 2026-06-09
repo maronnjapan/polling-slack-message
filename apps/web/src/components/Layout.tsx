@@ -3,8 +3,8 @@ import { useAsync } from "../hooks/useAsync";
 import { api } from "../api/client";
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { data: stats } = useAsync(api.stats, []);
-  const { data: setupStatus, reload: reloadSetup } = useAsync(api.slackSetupStatus, []);
+  const { data: stats } = useAsync(api.stats, [], { pollIntervalMs: 3000 });
+  const { data: setupStatus, reload: reloadSetup } = useAsync(api.slackSetupStatus, [], { pollIntervalMs: 10000 });
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
 

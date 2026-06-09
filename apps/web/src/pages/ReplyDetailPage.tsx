@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "../api/client";
 import { ChatPanel } from "../components/ChatPanel";
 import { useAsync } from "../hooks/useAsync";
+import { getMessageTitle } from "../lib/messages";
 import type { ReplyStatus } from "shared/types";
 
 const STATUS_OPTIONS: { value: ReplyStatus; label: string }[] = [
@@ -50,7 +51,7 @@ export function ReplyDetailPage({ id }: { id: string }) {
               ))}
             </div>
           </dd>
-          <dt>元メッセージ</dt><dd>{m ? <a href={`#/messages/${m.id}`}>{m.summary}</a> : reply.data.sourceMessageId}</dd>
+          <dt>元メッセージ</dt><dd>{m ? <a href={`#/messages/${m.id}`}>{getMessageTitle(m)}</a> : reply.data.sourceMessageId}</dd>
           <dt>判断理由</dt><dd>{reply.data.reasonSummary}</dd>
         </dl>
         <p className="note">Slackへの自動投稿ボタンはありません。内容確認後、必要に応じて手動で返信してください。</p>

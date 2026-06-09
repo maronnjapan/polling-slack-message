@@ -27,6 +27,7 @@ export interface SlackMessage {
     permalink: string | null;
   };
   rawText: string;
+  title?: string;
   summary: string;
   isMentionedToMe: boolean;
   requiresAction: boolean;

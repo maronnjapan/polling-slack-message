@@ -3,11 +3,12 @@ import { api } from "../api/client";
 import { ChatPanel } from "../components/ChatPanel";
 import { NotesPanel } from "../components/NotesPanel";
 import { useAsync } from "../hooks/useAsync";
+import { getMessageTitle } from "../lib/messages";
 
 export function MessageDetailPage({ id }: { id: string }) {
-  const m = useAsync(() => api.message(id), [id]);
-  const todos = useAsync(api.todos, []);
-  const replies = useAsync(api.replies, []);
+  const m = useAsync(() => api.message(id), [id], { pollIntervalMs: 5000 });
+  const todos = useAsync(api.todos, [], { pollIntervalMs: 5000 });
+  const replies = useAsync(api.replies, [], { pollIntervalMs: 5000 });
   const [busy, setBusy] = useState(false);
 
   if (m.loading) return <p>読み込み中...</p>;
@@ -26,16 +27,20 @@ export function MessageDetailPage({ id }: { id: string }) {
     <>
       <h1>メッセージ詳細</h1>
       <section className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <h2>{m.data.summary}</h2>
+        <div className="message-detail-header">
+          <div className="message-heading">
+            <span>タイトル</span>
+            <h2>{getMessageTitle(m.data)}</h2>
+            <p>{m.data.summary}</p>
+          </div>
           <button className="btn-sm" disabled={busy} onClick={toggleStatus}>
             {busy ? "..." : m.data.status === "done" ? "未対応に戻す" : "完了にする"}
           </button>
         </div>
-        <details style={{ marginTop: "0.75rem" }}>
-          <summary style={{ cursor: "pointer", color: "#64748b", fontSize: "0.875rem" }}>元のメッセージを表示</summary>
-          <p style={{ marginTop: "0.5rem", whiteSpace: "pre-wrap" }}>{m.data.rawText}</p>
-        </details>
+        <div className="message-body">
+          <h3>元のメッセージ</h3>
+          <p>{m.data.rawText}</p>
+        </div>
         <dl>
           <dt>送信者</dt>
           <dd>

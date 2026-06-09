@@ -27,6 +27,7 @@ export const slackMessageSchema = z.object({
     permalink: z.string().nullable(),
   }),
   rawText: z.string(),
+  title: z.string().optional(),
   summary: z.string(),
   isMentionedToMe: z.boolean(),
   requiresAction: z.boolean(),

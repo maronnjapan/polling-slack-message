@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import { ChatPanel } from "../components/ChatPanel";
 import { NotesPanel } from "../components/NotesPanel";
 import { useAsync } from "../hooks/useAsync";
+import { getMessageTitle } from "../lib/messages";
 import type { TodoStatus } from "shared/types";
 
 const STATUS_OPTIONS: { value: TodoStatus; label: string }[] = [
@@ -54,7 +55,7 @@ export function TodoDetailPage({ id }: { id: string }) {
           <dt>priority</dt><dd>{todo.data.priority}</dd>
           <dt>due</dt><dd>{todo.data.due ?? "なし"}</dd>
           <dt>判断理由</dt><dd>{todo.data.reasonSummary}</dd>
-          <dt>元メッセージ</dt><dd>{m ? <a href={`#/messages/${m.id}`}>{m.summary}</a> : todo.data.sourceMessageId}</dd>
+          <dt>元メッセージ</dt><dd>{m ? <a href={`#/messages/${m.id}`}>{getMessageTitle(m)}</a> : todo.data.sourceMessageId}</dd>
         </dl>
       </section>
       <section className="card">
